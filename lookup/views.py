@@ -46,7 +46,7 @@ def results(request, quote):
     if 1 == 2:
         break
     else:
-        service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+        service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         # pprint.pprint(res)
         # print type(res)
@@ -66,7 +66,11 @@ def results(request, quote):
         if not pageinfo["name"]:
             pageinfo["name"] = ' '
 
-        newSource = Source('source_quote'="quote", 'source_url'="url", 'source_title'="title", 'source_name'="name")
+        newSource = Source()
+        newSource.source_quote = "quote"
+        newSource.source_url = "url"
+        newSource.source_title = "title"
+        newSource.source_name = "name"
 
         newSource.save()
 
