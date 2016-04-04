@@ -146,5 +146,3 @@ STATICFILES_DIRS = (
 
 
 # Update database configuration with $DATABASE_URL.
-
-
