@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from views import goToGoogleTop
+# from views import goToGoogleTop
 
 from . import views
 
