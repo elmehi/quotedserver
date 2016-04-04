@@ -43,39 +43,38 @@ def results(request, quote):
     #     }
     #     pageinfo = json.dumps(pageinfo)
     #     return HttpResponse(pageinfo, content_type='application/json')
-    if 1 == 2:
-        break
-    else:
-        service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
-        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-        # pprint.pprint(res)
-        # print type(res)
-        first = res["items"][0]
-        # print first
-        if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-        pageinfo = {
-          'quote':text, 'url': first["link"], 'title': first["title"]
-          # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-        }
-        if "og:site_name" in meta.keys():
-          pageinfo["name"] = meta["og:site_name"]
-        # print type(pageinfo)
-        # return pageinfo
-        #create source out of google response and add to cache
 
-        if not pageinfo["name"]:
-            pageinfo["name"] = ' '
+    # else:
+    service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+    # pprint.pprint(res)
+    # print type(res)
+    first = res["items"][0]
+    # print first
+    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+    pageinfo = {
+      'quote':text, 'url': first["link"], 'title': first["title"]
+      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
+    }
+    if "og:site_name" in meta.keys():
+      pageinfo["name"] = meta["og:site_name"]
+    # print type(pageinfo)
+    # return pageinfo
+    #create source out of google response and add to cache
 
-        newSource = Source()
-        newSource.source_quote = "quote"
-        newSource.source_url = "url"
-        newSource.source_title = "title"
-        newSource.source_name = "name"
+    if not pageinfo["name"]:
+        pageinfo["name"] = ' '
 
-        newSource.save()
+    newSource = Source()
+    newSource.source_quote = "quote"
+    newSource.source_url = "url"
+    newSource.source_title = "title"
+    newSource.source_name = "name"
 
-        pageinfo = json.dumps(pageinfo)
-        return HttpResponse(pageinfo, content_type='application/json')
+    newSource.save()
+
+    pageinfo = json.dumps(pageinfo)
+    return HttpResponse(pageinfo, content_type='application/json')
 
 
 #     newSource = Source()
