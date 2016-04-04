@@ -48,11 +48,12 @@ def results(request, quote):
     }
     if "og:site_name" in meta.keys():
       pageinfo["name"] = meta["og:site_name"]
-    print pageinfo
+    pageinfo = json.dumps(pageinfo)
+    print type(pageinfo)
     # return pageinfo
     #create source out of google response and add to cache
 
-    HttpResponse(json.dumps(pageinfo), content_type='application/json')
+    return HttpResponse(pageinfo, content_type='application/json')
 
 
 #     newSource = Source()
