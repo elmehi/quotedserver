@@ -63,11 +63,10 @@ def results(request, quote):
         # return pageinfo
         #create source out of google response and add to cache
 
-        q = pageinfo['quote']
         if not pageinfo["name"]:
             pageinfo["name"] = ' '
 
-        newSource = Source('source_quote'=q, 'source_url'="url", 'source_title'="title", 'source_name'="name")
+        newSource = Source('source_quote'="quote", 'source_url'="url", 'source_title'="title", 'source_name'="name")
 
         newSource.save()
 
