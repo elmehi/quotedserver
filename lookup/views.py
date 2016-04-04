@@ -3,6 +3,7 @@
 from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
+from . import models
 import pprint
 import json
 
@@ -35,8 +36,8 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    if Sources.objects.filter(quote = text).exists():
-        s = Sources.objects.filter(quote = text)
+    if Source.objects.filter(quote = text).exists():
+        s = Source.objects.filter(quote = text)
         pageinfo = {
             'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
         }
