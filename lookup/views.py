@@ -44,7 +44,7 @@ def results(request, quote):
     #     pageinfo = json.dumps(pageinfo)
     #     return HttpResponse(pageinfo, content_type='application/json')
     if 1 == 2:
-
+        break
     else:
         service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
