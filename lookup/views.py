@@ -34,9 +34,7 @@ def index(request):
 
 def results(request):
 
-    url = request.url
-    parameters = request.parameters
-    text = parameters.quote
+    text = request.GET.get('quote','')
 
 
 
