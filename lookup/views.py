@@ -65,13 +65,13 @@ def results(request, quote):
     # if not pageinfo["name"]:
     #     pageinfo["name"] = ' '
     #
-    # newSource = Source()
-    # newSource.source_quote = "quote"
-    # newSource.source_url = "url"
-    # newSource.source_title = "title"
-    # newSource.source_name = "name"
-    #
-    # newSource.save()
+    newSource = Source()
+    newSource.source_quote = "quote"
+    newSource.source_url = "url"
+    newSource.source_title = "title"
+    newSource.source_name = "name"
+
+    newSource.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
