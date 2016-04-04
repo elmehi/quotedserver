@@ -62,16 +62,16 @@ def results(request, quote):
     # return pageinfo
     #create source out of google response and add to cache
 
-    if not pageinfo["name"]:
-        pageinfo["name"] = ' '
-
-    newSource = Source()
-    newSource.source_quote = "quote"
-    newSource.source_url = "url"
-    newSource.source_title = "title"
-    newSource.source_name = "name"
-
-    newSource.save()
+    # if not pageinfo["name"]:
+    #     pageinfo["name"] = ' '
+    #
+    # newSource = Source()
+    # newSource.source_quote = "quote"
+    # newSource.source_url = "url"
+    # newSource.source_title = "title"
+    # newSource.source_name = "name"
+    #
+    # newSource.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
