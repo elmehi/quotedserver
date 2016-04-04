@@ -1,7 +1,7 @@
 # import requests
 # from django.shortcuts import render
 from django.http import HttpResponse
-from googleapiclient.discovery import build
+# from googleapiclient.discovery import build
 import pprint
 import json
 
@@ -69,18 +69,18 @@ def index(request):
 
 
 
-def goToGoogleTop(text):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-    # pprint.pprint(res)
-    # print type(res)
-    first = res["items"][0]
-    # print first
-    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-    pageinfo = {
-      'quote':text, 'title': first["title"], 'url': first["link"]
-      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-    }
-    if "og:site_name" in meta.keys():
-      pageinfo["name"] = meta["og:site_name"]
-    return pageinfo
+# def goToGoogleTop(text):
+#     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+#     res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+#     # pprint.pprint(res)
+#     # print type(res)
+#     first = res["items"][0]
+#     # print first
+#     if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+#     pageinfo = {
+#       'quote':text, 'title': first["title"], 'url': first["link"]
+#       # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
+#     }
+#     if "og:site_name" in meta.keys():
+#       pageinfo["name"] = meta["og:site_name"]
+#     return pageinfo
