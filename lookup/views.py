@@ -35,25 +35,46 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-    # pprint.pprint(res)
-    # print type(res)
-    first = res["items"][0]
-    # print first
-    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-    pageinfo = {
-      'quote':text, 'title': first["title"], 'url': first["link"]
-      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-    }
-    if "og:site_name" in meta.keys():
-      pageinfo["name"] = meta["og:site_name"]
-    pageinfo = json.dumps(pageinfo)
-    print type(pageinfo)
-    # return pageinfo
-    #create source out of google response and add to cache
+    if Source.objects.filter(quote = text).exists():
+        s = Source.objects.filter(quote = text)
+        pageinfo = {
+            'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
+        }
+        pageinfo = json.dumps(pageinfo)
+        return HttpResponse(pageinfo, content_type='application/json')
 
-    return HttpResponse(pageinfo, content_type='application/json')
+    else:
+        service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+        # pprint.pprint(res)
+        # print type(res)
+        first = res["items"][0]
+        # print first
+        if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+        pageinfo = {
+          'quote':text, 'title': first["title"], 'url': first["link"]
+          # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
+        }
+        if "og:site_name" in meta.keys():
+          pageinfo["name"] = meta["og:site_name"]
+        # print type(pageinfo)
+        # return pageinfo
+        #create source out of google response and add to cache
+
+        newSource = Source()
+        newSource.quote = pageinfo['quote']
+        newSource.title = pageinfo['title']
+        newSource.url = pageinfo['url']
+
+        if not pageinfo['name']:
+            newSource.name = ' '
+        else:
+            newSource.name = pageinfo['name']
+
+        newSource.save()
+
+        pageinfo = json.dumps(pageinfo)
+        return HttpResponse(pageinfo, content_type='application/json')
 
 
 #     newSource = Source()
@@ -79,5 +100,3 @@ def results(request, quote):
 
 
 # def goToGoogleFirst(text):
-
-
