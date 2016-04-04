@@ -85,4 +85,5 @@ def goToGoogleTop(text):
     }
     if "og:site_name" in meta.keys():
       pageinfo["name"] = meta["og:site_name"]
+    print pageinfo
     return pageinfo
