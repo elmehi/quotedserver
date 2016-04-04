@@ -1,6 +1,7 @@
 # import requests
 # from django.shortcuts import render
 from django.http import HttpResponse
+from views import goToGoogleTop
 from googleapiclient.discovery import build
 import pprint
 import json
