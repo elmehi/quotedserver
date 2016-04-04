@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from .models import Source
 import pprint
 import json
+import urllib2
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -36,16 +37,16 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    if Source.objects.filter(source_quote = text).exists():
-        s = Source.objects.filter(source_quote = text)
-        pageinfo = {
-            'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
-        }
-        pageinfo = json.dumps(pageinfo)
-        return HttpResponse(pageinfo, content_type='application/json')
-
-    else:
-        service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+    # if Source.objects.filter(source_quote = text).exists():
+    #     s = Source.objects.filter(source_quote = text)
+    #     pageinfo = {
+    #         'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name
+    #     }
+    #     pageinfo = json.dumps(pageinfo)
+    #     return HttpResponse(pageinfo, content_type='application/json')
+    # else:
+    service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+    try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         # pprint.pprint(res)
         # print type(res)
@@ -65,18 +66,17 @@ def results(request, quote):
         if not pageinfo["name"]:
             pageinfo["name"] = ' '
 
-        newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
-        newSource.save()
+        # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
+        # newSource.save()
 
-        q = pageinfo['quote']
+        quote_text = pageinfo['quote']
 
         pageinfo = json.dumps(pageinfo)
         # return HttpResponse(pageinfo, content_type='application/json')
-        response = HttpResponse(pageinfo, content_type='application/json')
-        if response.status_code != 200:
-            return HttpResponse('{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "name": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":q}', content_type='application/json')
-        else:
-            return response
+        return HttpResponse(pageinfo, content_type='application/json')
+    except:
+        JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "name": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
+        return HttpResponse(JSON, content_type='application/json')
 
 #     newSource = Source()
 #     newSource.url = results["url"]
