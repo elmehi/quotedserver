@@ -36,13 +36,14 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    if Source.objects.filter(quote = text).exists():
-        s = Source.objects.filter(quote = text)
-        pageinfo = {
-            'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
-        }
-        pageinfo = json.dumps(pageinfo)
-        return HttpResponse(pageinfo, content_type='application/json')
+    # if Source.objects.filter(quote = text).exists():
+    #     s = Source.objects.filter(quote = text)
+    #     pageinfo = {
+    #         'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
+    #     }
+    #     pageinfo = json.dumps(pageinfo)
+    #     return HttpResponse(pageinfo, content_type='application/json')
+    if 1 == 2:
 
     else:
         service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
@@ -53,7 +54,7 @@ def results(request, quote):
         # print first
         if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
         pageinfo = {
-          'quote':text, 'title': first["title"], 'url': first["link"]
+          'quote':text, 'url': first["link"], 'title': first["title"]
           # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
         }
         if "og:site_name" in meta.keys():
@@ -62,15 +63,10 @@ def results(request, quote):
         # return pageinfo
         #create source out of google response and add to cache
 
-        newSource = Source()
-        newSource.quote = pageinfo['quote']
-        newSource.title = pageinfo['title']
-        newSource.url = pageinfo['url']
+        if not pageinfo["name"]:
+            pageinfo["name"] = ' '
 
-        if not pageinfo['name']:
-            newSource.name = ' '
-        else:
-            newSource.name = pageinfo['name']
+        newSource = Source('quote'=pageinfo["quote"], 'url'=pageinfo["url"], 'title'=pageinfo["title"], 'name'=pageinfo["name"])
 
         newSource.save()
 
