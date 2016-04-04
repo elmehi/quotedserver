@@ -32,16 +32,18 @@ def index(request):
 #logic to check and see if in databse - would do a get all objects then iterate and check
 #if this returns null - can't find anything - go to google, add to database
 
-# def lookup(request):
+def results(request):
 
-#     url = request.url
-#     parameters = request.parameters
-#     text = parameters.text
+    url = request.url
+    parameters = request.parameters
+    text = parameters.text
 
-    
+
 
 #     #create source out of google response and add to cache
-#     results = goToGoolgeTop(text)
+    results = goToGoolgeTop(text)
+    HttpResponse(json.dumps(results), content_type='application/json')
+
 
 #     newSource = Source()
 #     newSource.url = results["url"]
