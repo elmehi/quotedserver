@@ -36,7 +36,7 @@ def results(request):
 
     url = request.url
     parameters = request.parameters
-    text = parameters.text
+    text = parameters.quote
 
 
 
