@@ -8,6 +8,23 @@ import json
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
+def goToGoogleTop(text):
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+    # pprint.pprint(res)
+    # print type(res)
+    first = res["items"][0]
+    # print first
+    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+    pageinfo = {
+      'quote':text, 'title': first["title"], 'url': first["link"]
+      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
+    }
+    if "og:site_name" in meta.keys():
+      pageinfo["name"] = meta["og:site_name"]
+    print pageinfo
+    return pageinfo
+
 
 # from .models import Source
 
@@ -33,13 +50,9 @@ def index(request):
 #if this returns null - can't find anything - go to google, add to database
 
 def results(request, quote):
-
     text = quote
-    #request.GET.get('quote','')
 
-
-
-#     #create source out of google response and add to cache
+    #create source out of google response and add to cache
     results = goToGoolgeTop(text)
     HttpResponse(json.dumps(results), content_type='application/json')
 
@@ -69,20 +82,3 @@ def results(request, quote):
 # def goToGoogleFirst(text):
 
 
-
-def goToGoogleTop(text):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-    # pprint.pprint(res)
-    # print type(res)
-    first = res["items"][0]
-    # print first
-    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-    pageinfo = {
-      'quote':text, 'title': first["title"], 'url': first["link"]
-      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-    }
-    if "og:site_name" in meta.keys():
-      pageinfo["name"] = meta["og:site_name"]
-    print pageinfo
-    return pageinfo
