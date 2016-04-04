@@ -68,9 +68,15 @@ def results(request, quote):
         newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
         newSource.save()
 
-        pageinfo = json.dumps(pageinfo)
-        return HttpResponse(pageinfo, content_type='application/json')
+        q = pageinfo['quote']
 
+        pageinfo = json.dumps(pageinfo)
+        # return HttpResponse(pageinfo, content_type='application/json')
+        response = HttpResponse(pageinfo, content_type='application/json')
+        if response.status_code != 200:
+            return HttpResponse('{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "name": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":q}', content_type='application/json')
+        else:
+            return response
 
 #     newSource = Source()
 #     newSource.url = results["url"]
