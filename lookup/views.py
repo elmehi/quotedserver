@@ -58,7 +58,7 @@ def results(request, quote):
     }
     if "og:site_name" in meta.keys():
       pageinfo["name"] = meta["og:site_name"]
-    # print type(pageinfo)
+    print type(pageinfo)
     # return pageinfo
     #create source out of google response and add to cache
 
