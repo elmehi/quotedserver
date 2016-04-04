@@ -36,40 +36,40 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    # if Source.objects.filter(quote = text).exists():
-    #     s = Source.objects.filter(quote = text)
-    #     pageinfo = {
-    #         'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
-    #     }
-    #     pageinfo = json.dumps(pageinfo)
-    #     return HttpResponse(pageinfo, content_type='application/json')
+    if Source.objects.filter(source_quote = text).exists():
+        s = Source.objects.filter(source_quote = text)
+        pageinfo = {
+            'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
+        }
+        pageinfo = json.dumps(pageinfo)
+        return HttpResponse(pageinfo, content_type='application/json')
 
-    # else:
-    service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
-    res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-    # pprint.pprint(res)
-    # print type(res)
-    first = res["items"][0]
-    # print first
-    if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-    pageinfo = {
-      'quote':text, 'url': first["link"], 'title': first["title"]
-      # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-    }
-    if "og:site_name" in meta.keys():
-      pageinfo["name"] = meta["og:site_name"]
-    print type(pageinfo)
-    # return pageinfo
-    #create source out of google response and add to cache
+    else:
+        service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+        # pprint.pprint(res)
+        # print type(res)
+        first = res["items"][0]
+        # print first
+        if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+        pageinfo = {
+          'quote':text, 'url': first["link"], 'title': first["title"]
+          # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
+        }
+        if "og:site_name" in meta.keys():
+          pageinfo["name"] = meta["og:site_name"]
+        print type(pageinfo)
+        # return pageinfo
+        #create source out of google response and add to cache
 
-    # if not pageinfo["name"]:
-    #     pageinfo["name"] = ' '
-    #
-    # newSource = Source(source_quote='quote',source_url='url',source_title='title',source_name='name')
-    # newSource.save()
+        if not pageinfo["name"]:
+            pageinfo["name"] = ' '
 
-    pageinfo = json.dumps(pageinfo)
-    return HttpResponse(pageinfo, content_type='application/json')
+        newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
+        newSource.save()
+
+        pageinfo = json.dumps(pageinfo)
+        return HttpResponse(pageinfo, content_type='application/json')
 
 
 #     newSource = Source()

@@ -82,12 +82,12 @@ WSGI_APPLICATION = 'quotedSearch.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': 'de17ndfp6nsjri',
-        # 'USER': 'syallosrllmffi',
-        # 'PASSWORD': '2unkSwljcIgjpnMrASkJvVkfun',
-        # 'HOST': 'ec2-23-21-157-223.compute-1.amazonaws.com',
-        # 'PORT': '5432',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'de17ndfp6nsjri',
+        'USER': 'syallosrllmffi',
+        'PASSWORD': '2unkSwljcIgjpnMrASkJvVkfun',
+        'HOST': 'ec2-23-21-157-223.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
