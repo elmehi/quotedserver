@@ -66,7 +66,7 @@ def results(request, quote):
         if not pageinfo["name"]:
             pageinfo["name"] = ' '
 
-        newSource = Source('quote'=pageinfo["quote"], 'url'=pageinfo["url"], 'title'=pageinfo["title"], 'name'=pageinfo["name"])
+        newSource = Source('source_quote'=pageinfo["quote"], 'source_url'=pageinfo["url"], 'source_title'=pageinfo["title"], 'source_name'=pageinfo["name"])
 
         newSource.save()
 
