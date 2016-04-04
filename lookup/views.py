@@ -35,8 +35,8 @@ def index(request):
 def results(request, quote):
     text = quote.replace('+', ' ')
 
-    if Source.objects.filter(quote = text).exists():
-        s = Source.objects.filter(quote = text)
+    if Sources.objects.filter(quote = text).exists():
+        s = Sources.objects.filter(quote = text)
         pageinfo = {
             'quote':s.quote, 'url':s.url, 'title':s.title, 'name':s.name
         }
