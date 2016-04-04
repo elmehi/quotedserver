@@ -32,9 +32,10 @@ def index(request):
 #logic to check and see if in databse - would do a get all objects then iterate and check
 #if this returns null - can't find anything - go to google, add to database
 
-def results(request):
+def results(request, quote):
 
-    text = request.GET.get('quote','')
+    text = quote
+    #request.GET.get('quote','')
 
 
 
