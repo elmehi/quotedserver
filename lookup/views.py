@@ -4,7 +4,7 @@ from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
-# import pprint
+import pprint
 import json
 import urllib2
 
@@ -66,6 +66,7 @@ def results(request, quote):
                     pageinfo["date"] = stype["datepublished"]
                     print stype["datepublished"]
                 # else: pageinfo["date"] = ''
+        pprint(pageinfo)
 
 
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
@@ -74,6 +75,7 @@ def results(request, quote):
 
 
         pageinfo = json.dumps(pageinfo)
+        pprint(pageinfo)
         return HttpResponse(pageinfo, content_type='application/json')
     except Exception as e:
         # print str(e)
