@@ -4,7 +4,7 @@ from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
-import pprint
+# import pprint
 import json
 import urllib2
 
@@ -45,38 +45,25 @@ def results(request, quote):
     #     pageinfo = json.dumps(pageinfo)
     #     return HttpResponse(pageinfo, content_type='application/json')
     # else:
+
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
-        # pprint.pprint(res)
-        # print type(res)
         first = res["items"][0]
-        # print first
         if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
-        pageinfo = {
-          'quote':text, 'url': first["link"], 'title': first["title"]
-          # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
-        }
-        if "og:site_name" in meta.keys():
-          pageinfo["source"] = meta["og:site_name"]
+        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"]}
+        if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
+        else: pageinfo["source"] = ''
         print type(pageinfo)
-        # return pageinfo
-        #create source out of google response and add to cache
-
-        if not pageinfo["source"]:
-            pageinfo["source"] = ' '
 
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
         # newSource.save()
-
-        quote_text = pageinfo['domain']
-
+        # quote_text = pageinfo['domain']
         pageinfo = json.dumps(pageinfo)
-        # return HttpResponse(pageinfo, content_type='application/json')
         return HttpResponse(pageinfo, content_type='application/json')
     except:
-        JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "name": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
+        JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
         return HttpResponse(JSON, content_type='application/json')
 
 #     newSource = Source()
