@@ -59,9 +59,12 @@ def results(request, quote):
             if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
         # else: pageinfo["source"] = ''
         for t in stypes:
-            if first["pagemap"][t][0]: 
+            if first["pagemap"][t][0]:
+                print t
                 stype = first["pagemap"][t][0]
-                if "datepublished" in stype.keys(): pageinfo["date"] = stype["datepublished"]
+                if "datepublished" in stype.keys(): 
+                    pageinfo["date"] = stype["datepublished"]
+                    print stype["datepublished"]
                 # else: pageinfo["date"] = ''
 
 
