@@ -111,8 +111,8 @@ def googleFirst(text):
             for entry in res["items"]:
                 #search for date in two common locations
                 if "pagemap" in entry:
-                    if entry["pagemap"]["metatags"]: meta = entry["pagemap"]["metatags"]
-
+                    if entry["pagemap"]["metatags"]:
+                        meta = entry["pagemap"]["metatags"]
                         for key in datekeys:
                             if key in meta[0]:
                                 try:
@@ -127,8 +127,8 @@ def googleFirst(text):
                                 # catch error for unintelligible datestamp
                                 except ValueError: print ('error at ' + key + ' in metatags, parsing ' + meta[0][key])
 
-                    if "newsarticle" in entry["pagemap"]: article = entry["pagemap"]["newsarticle"]
-
+                    if "newsarticle" in entry["pagemap"]:
+                        article = entry["pagemap"]["newsarticle"]
                         for key in datekeys:
                             if key in article[0]:
                                 try:
