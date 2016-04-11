@@ -65,7 +65,8 @@ def results(request, quote):
                 stype = first["pagemap"][t][0]
                 if "datepublished" in stype.keys():
                     date = stype["datepublished"]
-                    date = datetime.datetime(int(date[:4]), int(date[6:7]), int(date[9:10]))
+                    print [int(date[:4]), int(date[5:7]), int(date[8:10])]
+                    date = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10]))
                     pageinfo["date"] = time.strftime('%d %B %Y', date)
                 break
         print(pageinfo)
