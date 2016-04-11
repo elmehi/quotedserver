@@ -64,7 +64,7 @@ def results(request, quote):
                     date = stype["datepublished"]
                     print [int(date[:4]), int(date[5:7]), int(date[8:10])]
                     date = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10]))
-                    pageinfo["date"] = date.strftime('%d %B %Y')
+                    pageinfo["date"] = date.strftime('%B %d %Y')
                 break
         print(pageinfo)
 
