@@ -161,7 +161,7 @@ def googleFirst(text):
     print 'earliest entry: '
 
     pageinfo = {'quote':text, 'title': first["title"], 'url': first["link"], 'source': ' ', 'date': str(mindate)}
-    return pageinfo
+    return HttpResponse(pageinfo, content_type='application/json')
 
 
 
