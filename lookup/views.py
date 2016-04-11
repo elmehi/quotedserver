@@ -4,7 +4,7 @@ from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
-#import pprint
+import pprint
 import json
 import urllib2
 
@@ -46,6 +46,8 @@ def results(request, quote):
     #     return HttpResponse(pageinfo, content_type='application/json')
     # else:
     service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+
+    return index(request)
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         # pprint.pprint(res)
