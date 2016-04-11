@@ -90,8 +90,8 @@ def googleFirst(text):
         if low >= high: break
 
         #get JSON of results from google with appropriate max date
-        res = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY"
-        # res = json.loads((urllib.urlopen(url)).read())
+        url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
         # for debugging:
