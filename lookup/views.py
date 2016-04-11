@@ -45,7 +45,7 @@ def results(request, quote):
     #     pageinfo = json.dumps(pageinfo)
     #     return HttpResponse(pageinfo, content_type='application/json')
     # else:
-    service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
