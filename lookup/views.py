@@ -181,7 +181,7 @@ def googleTop(text):
                 if "datepublished" in stype.keys():
                     ddate = stype["datepublished"]
                     print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
-                    ddate = datetime.datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
+                    ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
                     pageinfo["date"] = ddate.strftime('%B %d %Y')
                 break
         print(pageinfo)
