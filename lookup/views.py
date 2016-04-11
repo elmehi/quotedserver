@@ -47,7 +47,6 @@ def results(request, quote):
     # else:
     service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
 
-    return index(request)
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         # pprint.pprint(res)
