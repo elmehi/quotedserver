@@ -90,7 +90,7 @@ def googleFirst(text):
         if low >= high: break
 
         #get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY"
+        url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
@@ -168,7 +168,7 @@ def googleTop(text):
     stypes=["newsarticle", "webpage", "blogposting"]
 
     try:
-        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
+        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source':' ', 'date':' '}
         if first["pagemap"]["metatags"][0]:
