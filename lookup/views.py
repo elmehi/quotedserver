@@ -54,9 +54,9 @@ def results(request, quote):
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source': ' ', 'date': ' '}
-        if first["pagemap"]["metatags"][0]: 
-            meta = first["pagemap"]["metatags"][0]
-            if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
+        # if first["pagemap"]["metatags"][0]: 
+        #     meta = first["pagemap"]["metatags"][0]
+        #     if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
         # else: pageinfo["source"] = ''
         for t in stypes:
             if first["pagemap"][t][0]:
@@ -65,7 +65,7 @@ def results(request, quote):
                 if "datepublished" in stype.keys(): 
                     pageinfo["date"] = stype["datepublished"]
                     print stype["datepublished"]
-                # else: pageinfo["date"] = ''
+                break
         print(pageinfo)
 
 
