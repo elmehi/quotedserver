@@ -7,6 +7,8 @@ from .models import Source
 import pprint
 import json
 import urllib2
+import datetime
+import time
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -54,17 +56,17 @@ def results(request, quote):
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source': ' ', 'date': ' '}
-        # if first["pagemap"]["metatags"][0]: 
-        #     meta = first["pagemap"]["metatags"][0]
-        #     if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
-        # else: pageinfo["source"] = ''
+        if first["pagemap"]["metatags"][0]:
+            meta = first["pagemap"]["metatags"][0]
+            if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
         for t in stypes:
             if first["pagemap"][t][0]:
                 print t
                 stype = first["pagemap"][t][0]
-                if "datepublished" in stype.keys(): 
-                    pageinfo["date"] = stype["datepublished"]
-                    print stype["datepublished"]
+                if "datepublished" in stype.keys():
+                    date = stype["datepublished"]
+                    date = datetime.datetime(date[:4], date[6:7], date[9:10])
+                    pageinfo["date"] = time.strftime('%d %B %Y', date)
                 break
         print(pageinfo)
 
