@@ -48,18 +48,26 @@ def results(request, quote):
 
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
+    stypes=["newsarticle", "webpage", "blogposting"]
+
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         first = res["items"][0]
         if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+        for t in stypes:
+            if first["pagemap"][t][0]: stype = first["pagemap"][t][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"]}
         if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
         else: pageinfo["source"] = ''
+        if "datepublished" in stype.keys(): pageinfo["date"] = stype["datepublished"]
+        else: pageinfo["date"] = ''
         print type(pageinfo)
 
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
         # newSource.save()
         # quote_text = pageinfo['domain']
+
+
         pageinfo = json.dumps(pageinfo)
         return HttpResponse(pageinfo, content_type='application/json')
     except:
