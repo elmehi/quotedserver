@@ -53,14 +53,16 @@ def results(request, quote):
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         first = res["items"][0]
-        if first["pagemap"]["metatags"][0]: meta = first["pagemap"]["metatags"][0]
+        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source': ' ', 'date': ' '}
+        if first["pagemap"]["metatags"][0]: 
+            meta = first["pagemap"]["metatags"][0]
+            if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
+        # else: pageinfo["source"] = ''
         for t in stypes:
-            if first["pagemap"][t][0]: stype = first["pagemap"][t][0]
-        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"]}
-        if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
-        else: pageinfo["source"] = ''
-        if "datepublished" in stype.keys(): pageinfo["date"] = stype["datepublished"]
-        else: pageinfo["date"] = ''
+            if first["pagemap"][t][0]: 
+                stype = first["pagemap"][t][0]
+                if "datepublished" in stype.keys(): pageinfo["date"] = stype["datepublished"]
+                # else: pageinfo["date"] = ''
 
 
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
