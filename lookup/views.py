@@ -86,13 +86,11 @@ def googleFirst(text):
     for i in range(0, 15): # temporarily limit the number of searches for each quote
 
         # end loop if range has been maximally narrowed
-        if low >= high:
-            break
+        if low >= high: break
 
         #get JSON of results from google with appropriate max date
         url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY"
         res = json.loads((urllib.urlopen(url)).read())
-
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
         # for debugging:
@@ -113,8 +111,7 @@ def googleFirst(text):
             for entry in res["items"]:
                 #search for date in two common locations
                 if "pagemap" in entry:
-                    if entry["pagemap"]["metatags"]:
-                        meta = entry["pagemap"]["metatags"]
+                    if entry["pagemap"]["metatags"]: meta = entry["pagemap"]["metatags"]
 
                         for key in datekeys:
                             if key in meta[0]:
@@ -128,11 +125,9 @@ def googleFirst(text):
                                         first = entry
 
                                 # catch error for unintelligible datestamp
-                                except ValueError:
-                                    print ('error at ' + key + ' in metatags, parsing ' + meta[0][key])
+                                except ValueError: print ('error at ' + key + ' in metatags, parsing ' + meta[0][key])
 
-                    if "newsarticle" in entry["pagemap"]:
-                        article = entry["pagemap"]["newsarticle"]
+                    if "newsarticle" in entry["pagemap"]: article = entry["pagemap"]["newsarticle"]
 
                         for key in datekeys:
                             if key in article[0]:
@@ -144,12 +139,10 @@ def googleFirst(text):
                                         first = entry
 
                                 # catch error for unintelligible datestamp
-                                except ValueError:
-                                    print ('error at ' + key + ' in newsarticle, parsing ' + article[0][key])
+                                except ValueError: print ('error at ' + key + ' in newsarticle, parsing ' + article[0][key])
 
                     print mindate # for debugging purposes
-                else:
-                    print 'no pagemap'
+                else: print 'no pagemap'
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
@@ -161,6 +154,7 @@ def googleFirst(text):
     print 'earliest entry: '
 
     pageinfo = {'quote':text, 'title': first["title"], 'url': first["link"], 'source': ' ', 'date': str(mindate)}
+    pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
 
@@ -175,7 +169,7 @@ def googleTop(text):
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm',).execute()
         first = res["items"][0]
-        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source': ' ', 'date': ' '}
+        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source':' ', 'date':' '}
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
