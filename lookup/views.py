@@ -59,7 +59,7 @@ def results(request, quote):
           # 'name': first["pagemap"]["metatags"][0]["og:site_name"]
         }
         if "og:site_name" in meta.keys():
-          pageinfo["name"] = meta["og:site_name"]
+          pageinfo["source"] = meta["og:site_name"]
         print type(pageinfo)
         # return pageinfo
         #create source out of google response and add to cache
@@ -70,7 +70,7 @@ def results(request, quote):
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
         # newSource.save()
 
-        quote_text = pageinfo['quote']
+        quote_text = pageinfo['domain']
 
         pageinfo = json.dumps(pageinfo)
         # return HttpResponse(pageinfo, content_type='application/json')
