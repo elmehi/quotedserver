@@ -61,7 +61,7 @@ def results(request, quote):
         else: pageinfo["source"] = ''
         if "datepublished" in stype.keys(): pageinfo["date"] = stype["datepublished"]
         else: pageinfo["date"] = ''
-        print type(pageinfo)
+
 
         # newSource = Source(source_quote=pageinfo['quote'],source_url=pageinfo['url'],source_title=pageinfo['title'],source_name=pageinfo['name'])
         # newSource.save()
@@ -70,7 +70,8 @@ def results(request, quote):
 
         pageinfo = json.dumps(pageinfo)
         return HttpResponse(pageinfo, content_type='application/json')
-    except:
+    except Exception, e:
+        print str(e)
         JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "Directors Without Borders", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
         return HttpResponse(JSON, content_type='application/json')
 
