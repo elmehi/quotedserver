@@ -4,7 +4,7 @@ from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
-import pprint
+#import pprint
 import json
 import urllib2
 
