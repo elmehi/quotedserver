@@ -4,11 +4,8 @@ from django.http import HttpResponse
 # from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
-import pprint
 import json
-import urllib2
 import datetime
-import time
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -67,7 +64,7 @@ def results(request, quote):
                     date = stype["datepublished"]
                     print [int(date[:4]), int(date[5:7]), int(date[8:10])]
                     date = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10]))
-                    pageinfo["date"] = time.strftime('%d %B %Y', date)
+                    pageinfo["date"] = date.strftime('%d %B %Y')
                 break
         print(pageinfo)
 
