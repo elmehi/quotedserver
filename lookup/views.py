@@ -38,8 +38,8 @@ def index(request):
 
 
 
-def results(request, quote):
-    text = quote.replace('+', ' ')
+def results(requesot, quote):
+    text = urllib.unquote(quote).decode('utf8')
     return  googleFirst(text)
     # return  googleTop(text)
 
