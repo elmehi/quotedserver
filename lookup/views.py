@@ -40,8 +40,8 @@ def index(request):
 
 def results(request, quote):
     text = quote.replace('+', ' ')
-    return  googleFirst(text)
-    # return  googleTop(text)
+    # return  googleFirst(text)
+    return  googleTop(text)
 
     # if Source.objects.filter(source_quote = text).exists():
     #     s = Source.objects.filter(source_quote = text)
