@@ -40,6 +40,7 @@ def index(request):
 
 def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
+    print text
     # return  googleFirst(text)
     return  googleTop(text)
 
