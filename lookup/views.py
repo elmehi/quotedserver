@@ -38,10 +38,11 @@ def index(request):
 
 
 
-def results(requesot, quote):
+def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
-    return  googleFirst(text)
-    # return  googleTop(text)
+    # return  googleFirst(text)
+    return  googleTop(text)
+
 
     # if Source.objects.filter(source_quote = text).exists():
     #     s = Source.objects.filter(source_quote = text)
