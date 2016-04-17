@@ -194,6 +194,6 @@ def googleTop(text):
         return HttpResponse(pageinfo, content_type='application/json')
     except Exception as e:
         print str(e)
-        # return HttpResponse(str(e))
-        JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "THIS IS AN ERROR", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
-        return HttpResponse(JSON, content_type='application/json')
+        return HttpResponse(str(e))
+        # JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "THIS IS AN ERROR", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
+        # return HttpResponse(JSON, content_type='application/json')
