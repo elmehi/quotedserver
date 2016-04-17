@@ -167,7 +167,7 @@ def googleFirst(text):
 def googleTop(text):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
-    stypes=["newsarticle", "webpage", "blogposting"]
+    stypes=["newsarticle", "webpage", "blogposting", "article"]
 
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
