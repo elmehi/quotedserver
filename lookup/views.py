@@ -178,15 +178,16 @@ def googleTop(text):
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
         for t in stypes:
-            if first["pagemap"][t][0]:
-                print t
+            if t in first["pagemap"].keys():
+                print t + "is found"
                 stype = first["pagemap"][t][0]
                 if "datepublished" in stype.keys():
                     ddate = stype["datepublished"]
                     print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
                     ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
                     pageinfo["date"] = ddate.strftime('%B %d %Y')
-                break
+                else:
+                    print "date published not found"
         print(pageinfo)
 
 
