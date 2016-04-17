@@ -170,7 +170,7 @@ def googleTop(text):
     stypes=["newsarticle", "webpage", "blogposting"]
 
     try:
-        res = service.cse().list(q = urllib.quote(text), cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
+        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
         print res
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source':' ', 'date':' '}
