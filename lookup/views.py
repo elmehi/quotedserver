@@ -41,14 +41,17 @@ def results(request, quote):
     print text
 
     if Source.objects.filter(source_quote = text).exists():
-        s = Source.objects.filter(source_quote = text)
+        s = Source.objects.get(source_quote = text)
+        print s
         pageinfo = {
             'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name
         }
         pageinfo = json.dumps(pageinfo)
+        print "from db"
         return HttpResponse(pageinfo, content_type='application/json')
 
     else:
+        print "not from db"
         return googleTop(text)
 
 
@@ -155,15 +158,17 @@ def googleTop(text):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     stypes=["newsarticle", "webpage", "blogposting", "article"]
-
+    ddate = date.today
+    print ddate
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
-        print res
+        # print res
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source':' ', 'date':' '}
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
+        
         for t in stypes:
             if t in first["pagemap"].keys():
                 print t + "is found"
@@ -176,12 +181,16 @@ def googleTop(text):
                 else:
                     print "date published not found"
         print(pageinfo)
+        print ddate
 
+        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['source'], source_date=ddate)
+        newSource.save()
 
         pageinfo = json.dumps(pageinfo)
         print(pageinfo)
         return HttpResponse(pageinfo, content_type='application/json')
     except Exception as e:
+        print ddate
         print str(e)
         return HttpResponse(str(e))
         # JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "THIS IS AN ERROR", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
