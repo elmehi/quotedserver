@@ -175,15 +175,19 @@ def googleTop(text):
                 stype = first["pagemap"][t][0]
                 if "datepublished" in stype.keys():
                     ddate = stype["datepublished"]
-                    print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
-                    ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
-                    pageinfo["date"] = ddate.strftime('%B %d %Y')
+                    if len(ddate) > 5:
+                        print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
+                        ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
+                        pageinfo["date"] = ddate.strftime('%B %d %Y')
+                    else:
+                        print "date published not found (len)"
+                        pageinfo["date"] = "2016-01-16 03:22"
                 else:
                     print "date published not found"
         print(pageinfo)
         print ddate
 
-        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['source'], source_date=ddate)
+        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['source'], source_date=pageinfo['date'])
         newSource.save()
 
         pageinfo = json.dumps(pageinfo)
