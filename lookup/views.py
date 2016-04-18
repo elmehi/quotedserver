@@ -158,7 +158,7 @@ def googleTop(text):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     stypes=["newsarticle", "webpage", "blogposting", "article"]
-    ddate = date.today
+    ddate = date.today()
     print ddate
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
@@ -181,11 +181,11 @@ def googleTop(text):
                         pageinfo["date"] = ddate.strftime('%B %d %Y')
                     else:
                         print "date published not found (len)"
-                        ddate = date.today
+                        ddate = date.today()
                         pageinfo["date"] = "2016-01-16 03:22"
                 else:
                     print "date published not found"
-                    ddate = date.today
+                    ddate = date.today()
                     pageinfo["date"] = str(ddate)
         print(pageinfo)
         print ddate
