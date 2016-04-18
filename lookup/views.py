@@ -1,7 +1,6 @@
 # import requests
 # from django.shortcuts import render
 from django.http import HttpResponse
-# from views import goToGoogleTop
 from googleapiclient.discovery import build
 from .models import Source
 import json
@@ -13,7 +12,6 @@ import urllib
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
-# from .models import Source
 
 # returns all sources in database
 # def db(request):
@@ -41,32 +39,17 @@ def index(request):
 def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
     print text
-    # return  googleFirst(text)
-    return  googleTop(text)
 
+    if Source.objects.filter(source_quote = text).exists():
+        s = Source.objects.filter(source_quote = text)
+        pageinfo = {
+            'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name
+        }
+        pageinfo = json.dumps(pageinfo)
+        return HttpResponse(pageinfo, content_type='application/json')
 
-    # if Source.objects.filter(source_quote = text).exists():
-    #     s = Source.objects.filter(source_quote = text)
-    #     pageinfo = {
-    #         'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name
-    #     }
-    #     pageinfo = json.dumps(pageinfo)
-    #     return HttpResponse(pageinfo, content_type='application/json')
-    # else:
-    # newSource = Source()
-    # newSource.url = results["url"]
-    # newSource.title = results["title"]
-    # newSource.author = results["author"]
-    # newSource.name = results["name"]
-    # newSource.date = results["date"]
-    # newSource.save()
-    # get all sources
-    # iterate through sources
-    # if matching source found, returns
-    # else, go to google and look up source for text
-    #      create new Source() object and save() to database
-    # return source
-
+    else:
+        return googleTop(text)
 
 
 
@@ -157,6 +140,10 @@ def googleFirst(text):
     print 'earliest entry: '
 
     pageinfo = {'quote':text, 'title': first["title"], 'url': first["link"], 'source': ' ', 'date': str(mindate)}
+
+    newSource = Source(source_quote=text, source_url=first["link"], source_title=first["title"], source_name=' ', source_date=str(mindate))
+    newSource.save()
+
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
