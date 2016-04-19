@@ -191,6 +191,8 @@ def googleTop(text):
 
         newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
         newSource.save()
+        newRequest = Request(user_id=1, request_date=date.today(), request_source=newSource)
+        newRequest.save()
 
         pageinfo = json.dumps(pageinfo)
         print(pageinfo)
