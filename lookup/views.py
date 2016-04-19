@@ -42,9 +42,11 @@ def results(request, quote):
 
     if Source.objects.filter(source_quote = text).exists():
         s = Source.objects.get(source_quote = text)
-        print s
+        # print s
+        newRequest = Request(user_id=1, request_date=date.today(), request_source=s)
+        newRequest.save()
         pageinfo = {
-            'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name
+            'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name, 'date':str(s.source_date)
         }
         pageinfo = json.dumps(pageinfo)
         print "from db"
@@ -164,10 +166,10 @@ def googleTop(text):
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
         # print res
         first = res["items"][0]
-        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'source':' ', 'date':' '}
+        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':' '}
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
-            if "og:site_name" in meta.keys(): pageinfo["source"] = meta["og:site_name"]
+            if "og:site_name" in meta.keys(): pageinfo["name"] = meta["og:site_name"]
         
         for t in stypes:
             if t in first["pagemap"].keys():
@@ -175,14 +177,11 @@ def googleTop(text):
                 stype = first["pagemap"][t][0]
                 if "datepublished" in stype.keys():
                     ddate = stype["datepublished"]
-                    if len(ddate) > 5:
-                        print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
-                        ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
-                        pageinfo["date"] = ddate.strftime('%B %d %Y')
-                    else:
-                        print "date published not found (len)"
-                        ddate = date.today()
-                        pageinfo["date"] = "2016-01-16 03:22"
+                    # print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
+                    # ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
+                    # pageinfo["date"] = ddate.strftime('%B %d %Y')
+                    pageinfo["date"] = str(ddate)
+
                 else:
                     print "date published not found"
                     ddate = date.today()
@@ -190,7 +189,7 @@ def googleTop(text):
         print(pageinfo)
         print ddate
 
-        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['source'], source_date=ddate)
+        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
         newSource.save()
 
         pageinfo = json.dumps(pageinfo)
