@@ -17,7 +17,17 @@ import urllib
 
 #     return render(request, 'db.html', {'sources': sources})
 
+def authenticate(request):
+    print request.META
+    print request.META['Authorization']
+    
+    return HttpResponse('pageinfo', content_type='application/text')
 
+def signup(request):
+    print request.META
+    print request.META['Authorization']
+    
+    return HttpResponse('pageinfo', content_type='application/text')
 
 def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
