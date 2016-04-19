@@ -25,8 +25,5 @@ class User(models.Model):
 
 class Request(models.Model):
 	user_id = models.BigIntegerField()
-	request_date = models.DateTimeField(default=datetime.date.today)
+	request_date = models.DateTimeField(default=datetime.date.today())
 	request_source = models.ForeignKey('Source', on_delete=models.DO_NOTHING)
-    
-    def __str__(self):
-        return self.request_source.source_quote
