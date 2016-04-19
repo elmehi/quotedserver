@@ -12,7 +12,7 @@ class Source(models.Model):
     source_date = models.DateTimeField(default=datetime.date.today())
 
     def __str__(self):
-         return self.source_quote
+        return self.source_quote
 
 class User(models.Model):
 	username = models.CharField(max_length = 200)
