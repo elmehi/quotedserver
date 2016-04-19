@@ -9,10 +9,6 @@ import dateutil.parser
 import urllib
 
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
-
-
 # returns all sources in database
 # def db(request):
 #     sources = Source()
@@ -21,39 +17,30 @@ def index(request):
 
 #     return render(request, 'db.html', {'sources': sources})
 
-# JS guys need a get request
-# def getSource(request):
-#     newSource = Source()
-#     newSource.name = "test"
-#     jsonData = {
-#         name:
-#     }
-#     newSource.save()
-#     HttpResponse(json.dumps(jsonData), content_type='application/json')
-
-#logic to check and see if in databse - would do a get all objects then iterate and check
-#if this returns null - can't find anything - go to google, add to database
-
 
 
 def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
     print text
 
+    #check if source in db, if so pull from db
     if Source.objects.filter(source_quote = text).exists():
         s = Source.objects.get(source_quote = text)
-        # print s
+
+        #create request and put in db
         newRequest = Request(user_id=1, request_date=date.today(), request_source=s)
         newRequest.save()
+
         pageinfo = {
             'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name, 'date':str(s.source_date)
         }
         pageinfo = json.dumps(pageinfo)
-        print "from db"
+        # print "from db"
         return HttpResponse(pageinfo, content_type='application/json')
 
+    #if not cached initiate API request
     else:
-        print "not from db"
+        # print "not from db"
         return googleTop(text)
 
 
@@ -146,8 +133,13 @@ def googleFirst(text):
 
     pageinfo = {'quote':text, 'title': first["title"], 'url': first["link"], 'source': ' ', 'date': str(mindate)}
 
+    #create source object and put in db
     newSource = Source(source_quote=text, source_url=first["link"], source_title=first["title"], source_name=' ', source_date=str(mindate))
     newSource.save()
+
+    #create request and put in db
+    newRequest = Request(user_id=1, request_date=date.today(), request_source=newSource)
+    newRequest.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
