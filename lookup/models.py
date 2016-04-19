@@ -29,4 +29,4 @@ class Request(models.Model):
 	request_source = models.ForeignKey('Source', on_delete=models.DO_NOTHING)
     
     def __str__(self):
-        return self.request_source.source_quote + " " + self.request_date
+        return self.request_source.source_quote
