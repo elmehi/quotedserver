@@ -7,6 +7,7 @@ import json
 from datetime import datetime, date, timedelta
 import dateutil.parser
 import urllib
+import base64
 
 
 # returns all sources in database
@@ -19,15 +20,42 @@ import urllib
 
 def authenticate(request):
     print request.META
-    print request.META['Authorization']
-    
-    return HttpResponse('pageinfo', content_type='application/text')
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    authorization = base64.b64decode(b64authorization)
+    print(authorization)
+
+    return HttpResponse('Test', content_type='application/text')
+    token = ''
+    u = request[.value]
+    p = request.value
+
+    if User.objects.filter(username=u).exists():
+        user = User.objects.get(username=u)
+        if user.password == p:
+            return HttpResponse(token, content_type='application/text')
+        else
+            return HttpResponse('Incorrect username or password', content_type='application/text')
+
+    else:
+        return HttpResponse('Incorrect username or password', content_type='application/text')
+
 
 def signup(request):
     print request.META
-    print request.META['Authorization']
-    
-    return HttpResponse('pageinfo', content_type='application/text')
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    authorization = base64.b64decode(b64authorization)
+    print(authorization)
+
+    token = ''
+    u = request.value
+    p = request.value
+
+    if User.objects.filter(username=u).exists():
+        return HttpResponse(token, content_type='application/text')
+    else:
+        newUser = User(username=u, password=p, date_created=date.today())
+        newUser.save()
+        return HttpResponse(token, content_type='application/text')
 
 def results(request, quote):
     text = urllib.unquote(quote).decode('utf8')
