@@ -21,7 +21,7 @@ class User(models.Model):
 	date_created = models.DateTimeField(default=datetime.date.today())
 
 	def __str__(self):
-		return self.user_name
+		return self.username
 
 class Request(models.Model):
 	user_id = models.BigIntegerField()
