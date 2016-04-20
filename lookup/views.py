@@ -233,9 +233,9 @@ def googleTop(text):
 
     stypes=["newsarticle", "webpage", "blogposting", "article"]
     ddate = date.today()
-    print ddate
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
+        print res
         # print res
         first = res["items"][0]
         pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':' '}
@@ -258,8 +258,6 @@ def googleTop(text):
                     print "date published not found"
                     ddate = date.today()
                     pageinfo["date"] = str(ddate)
-        print(pageinfo)
-        print ddate
 
         newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
         newSource.save()
@@ -267,9 +265,14 @@ def googleTop(text):
         newRequest.save()
 
         pageinfo = json.dumps(pageinfo)
+        
+        print "SUCCESS"
         print(pageinfo)
+        print ddate
+        
         return HttpResponse(pageinfo, content_type='application/json')
     except Exception as e:
+        print "FAIL"
         print ddate
         print str(e)
         return HttpResponse(str(e))
