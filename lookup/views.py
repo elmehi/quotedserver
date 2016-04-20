@@ -34,13 +34,17 @@ def toggleDomain(request, domain):
     u = str(b64authorization.decode('base64'))
     
     user = User.objects.get(username=u)
-    if str.find(user.domain_list, d):
-        str.replace(user.domain_list, ',' + d, '')
-        if str.find(user.domain_list, d):
-            str.replace(user.domain_list, d, '')
+    list_string = str(user.domain_list)
+    if str.find(list_string, d):
+        new = str.replace(list_string, ',' + d, '')
+        if str.find(new, d):
+            new = str.replace(new, d, '')
+        list_string = new
     else:
         user.domain_list = user.domain_list +","+d
         
+    user.domain_list = list_string
+    print list_string
     print user.domain_list
 
     return HttpResponse(user.domain_list, content_type='application/text')
