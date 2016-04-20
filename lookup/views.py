@@ -26,7 +26,7 @@ def authenticate(request):
 
     return HttpResponse('Test', content_type='application/text')
     token = ''
-    u = request[.value]
+    u = request.value
     p = request.value
 
     if User.objects.filter(username=u).exists():
@@ -45,6 +45,7 @@ def signup(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
     authorization = base64.b64decode(b64authorization)
     print(authorization)
+    return HttpResponse('Test', content_type='application/text')
 
     token = ''
     u = request.value
