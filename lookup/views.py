@@ -33,7 +33,7 @@ def authenticate(request):
         user = User.objects.get(username=u)
         if user.password == p:
             return HttpResponse(token, content_type='application/text')
-        else
+        else:
             return HttpResponse('Incorrect username or password', content_type='application/text')
 
     else:
