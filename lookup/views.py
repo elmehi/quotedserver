@@ -29,9 +29,9 @@ def getHistory(request):
     return HttpResponse(reqs, content_type='application/json')
 
 def toggleDomain(request, domain):
-    d = domain.decode('base64')
+    d = str(domain.decode('base64'))
     b64authorization = request.META['HTTP_AUTHORIZATION']
-    u = b64authorization.decode('base64')
+    u = str(b64authorization.decode('base64'))
     
     user = User.objects.get(username=u)
     if str.find(user.domain_list, d):
