@@ -18,6 +18,18 @@ import base64
 
 #     return render(request, 'db.html', {'sources': sources})
 
+def toggleDomain(request, domain):
+    d = domain.value
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    u = b64authorization.decode('base64')
+
+    user = User.objects.get(username=u)
+    if str.find(user.domain_list, d):
+        str.replace(user.domain_list, d, '')
+    else:
+        user.domain_list = user.domain_list +","+d
+
+
 def authenticate(request):
     print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']

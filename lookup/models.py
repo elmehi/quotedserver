@@ -19,6 +19,7 @@ class User(models.Model):
 	password = models.CharField(max_length = 20)
 	highlight_url = models.BooleanField(default = True)
 	date_created = models.DateTimeField(default=django.utils.timezone.now)
+	domain_list = models.TextField()
 
 	def __str__(self):
 		return self.username
