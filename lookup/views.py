@@ -29,17 +29,21 @@ def getHistory(request):
     return HttpResponse(reqs, content_type='application/json')
 
 def toggleDomain(request, domain):
-    print domain
-    d = domain
+    d = domain.decode('base64')
     b64authorization = request.META['HTTP_AUTHORIZATION']
     u = b64authorization.decode('base64')
-    print(u)
-    return
+    
     user = User.objects.get(username=u)
     if str.find(user.domain_list, d):
-        str.replace(user.domain_list, d, '')
+        str.replace(user.domain_list, ',' + d, '')
+        if str.find(user.domain_list, d):
+            str.replace(user.domain_list, d, '')
     else:
         user.domain_list = user.domain_list +","+d
+        
+    print user.domain_list
+
+    return HttpResponse(user.domain_list, content_type='application/text')
 
 
 def authenticate(request):
