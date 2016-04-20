@@ -235,9 +235,14 @@ def googleTop(text):
     ddate = date.today()
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
+        print res['totalResults']
+        print int(res['totalResults'])
+        
         if int(res["totalResults"]) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
             res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm').execute()
+            print res['totalResults']
+            print int(res['totalResults'])
         
         print res
         # print res
@@ -277,7 +282,6 @@ def googleTop(text):
         return HttpResponse(pageinfo, content_type='application/json')
     except Exception as e:
         print "FAIL"
-        print ddate
         print e
         return HttpResponse(str(e))
         # JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "THIS IS AN ERROR", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
