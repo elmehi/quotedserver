@@ -35,15 +35,20 @@ def toggleDomain(request, domain):
     
     user = User.objects.get(username=u)
     list_string = str(user.domain_list)
+    
     if str.find(list_string, d):
+        print 'found'
         new = str.replace(list_string, ',' + d, '')
         if str.find(new, d):
+            print 'found at beginning'
             new = str.replace(new, d, '')
         list_string = new
     else:
+        print 'adding'
         user.domain_list = user.domain_list +","+d
         
     user.domain_list = list_string
+    
     print list_string
     print user.domain_list
 
