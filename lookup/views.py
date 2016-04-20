@@ -35,7 +35,6 @@ def toggleDomain(request, d):
     username = str(b64authorization.decode('base64'))
     
     user = User.objects.get(username=username)
-    user.domains = []
     
     print('before', user.domains)
     
