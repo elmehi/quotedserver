@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import django
 from django.db import models
+from django.contrib.postgres import fields
 import datetime
 
 # A source model.
@@ -19,7 +20,7 @@ class User(models.Model):
 	password = models.CharField(max_length = 20)
 	highlight_url = models.BooleanField(default = True)
 	date_created = models.DateTimeField(default=django.utils.timezone.now)
-	domain_list = models.ArrayField(models.CharField(max_length=200), blank=True)
+	domain_list = fields.ArrayField(models.CharField(max_length=200), blank=True)
 
 	def __str__(self):
 		return self.username
