@@ -18,6 +18,16 @@ import base64
 
 #     return render(request, 'db.html', {'sources': sources})
 
+def getHistory(request):
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    u = b64authorization.decode('base64')
+
+    r = Request.objects.filter(user_id=u)
+    reqs = list(r)
+
+    reqs = json.dumps(reqs)
+    return HttpResponse(reqs, content_type='application/json')
+
 def toggleDomain(request, domain):
     d = domain
     b64authorization = request.META['HTTP_AUTHORIZATION']
