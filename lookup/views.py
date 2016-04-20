@@ -50,7 +50,7 @@ def toggleDomain(request, d):
         
     print('after', user.domains)
 
-    return HttpResponse(str(user.domains), content_type='application/text')
+    return HttpResponse(json.dumps(user.domains), content_type='application/text')
 
 
 def authenticate(request):
