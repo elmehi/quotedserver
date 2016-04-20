@@ -29,11 +29,15 @@ def getHistory(request):
     return HttpResponse(reqs, content_type='application/json')
 
 def toggleDomain(request, domain):
+    print domain
     d = str(domain.decode('base64'))
+    print d
     b64authorization = request.META['HTTP_AUTHORIZATION']
     u = str(b64authorization.decode('base64'))
+    print u
     
     user = User.objects.get(username=u)
+    print user
     list_string = str(user.domain_list)
     print('before', list_string)
     
@@ -283,7 +287,7 @@ def googleTop(text):
     except Exception as e:
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
+        message = template.format(type(e).__name__, e.args)
         print message
         print "FAIL"
         print e
