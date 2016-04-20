@@ -28,34 +28,28 @@ def getHistory(request):
     reqs = json.dumps(reqs)
     return HttpResponse(reqs, content_type='application/json')
 
-def toggleDomain(request, domain):
-    print domain
-    d = str(domain.decode('base64'))
-    print d
-    b64authorization = request.META['HTTP_AUTHORIZATION']
-    u = str(b64authorization.decode('base64'))
-    print u
+def toggleDomain(request, d):
+    domain = str(d.decode('base64'))
     
-    user = User.objects.get(username=u)
-    print user
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    username = str(b64authorization.decode('base64'))
+    
+    user = User.objects.get(username=username)
     domains = user.domain_list
+    
     print('before', domains)
     
-    # if str.find(list_string, d):
-    #     print 'found'
-    #     new = str.replace(list_string, ',' + d, '')
-    #     if str.find(new, d):
-    #         print 'found at beginning'
-    #         new = str.replace(new, d, '')
-    #     list_string = new
-    # else:
-    #     print 'adding'
-    #     user.domain_list = user.domain_list +","+d
-    #     
-    # user.domain_list = list_string
-    # user.save()
-    # print list_string
-    # print user.domain_list
+    if domain in domains:
+        print 'found'
+        while domain in domains:
+            domains.remove(domain)
+    else:
+        print 'adding'
+        domains.append(domain)
+    user.domain_list = domains
+    user.save()
+        
+    print('after', domains)
 
     return HttpResponse(str(user.domain_list), content_type='application/text')
 
