@@ -38,26 +38,26 @@ def toggleDomain(request, domain):
     
     user = User.objects.get(username=u)
     print user
-    list_string = str(user.domain_list)
-    print('before', list_string)
+    domains = user.domain_list
+    print('before', domains)
     
-    if str.find(list_string, d):
-        print 'found'
-        new = str.replace(list_string, ',' + d, '')
-        if str.find(new, d):
-            print 'found at beginning'
-            new = str.replace(new, d, '')
-        list_string = new
-    else:
-        print 'adding'
-        user.domain_list = user.domain_list +","+d
-        
-    user.domain_list = list_string
-    user.save()
-    print list_string
-    print user.domain_list
+    # if str.find(list_string, d):
+    #     print 'found'
+    #     new = str.replace(list_string, ',' + d, '')
+    #     if str.find(new, d):
+    #         print 'found at beginning'
+    #         new = str.replace(new, d, '')
+    #     list_string = new
+    # else:
+    #     print 'adding'
+    #     user.domain_list = user.domain_list +","+d
+    #     
+    # user.domain_list = list_string
+    # user.save()
+    # print list_string
+    # print user.domain_list
 
-    return HttpResponse(user.domain_list, content_type='application/text')
+    return HttpResponse(str(user.domain_list), content_type='application/text')
 
 
 def authenticate(request):
@@ -240,14 +240,13 @@ def googleTop(text):
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
         print res
-        print res['totalResults']
-        print int(res['totalResults'])
+        tot = res['queries']['request'][0]['totalResults']
+        print tot
+        print int(tot)
         
-        if int(res["totalResults"]) == 0:
+        if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
             res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm').execute()
-            print res['totalResults']
-            print int(res['totalResults'])
         
         print res
         # print res
