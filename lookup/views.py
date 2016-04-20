@@ -21,8 +21,8 @@ import base64
 def authenticate(request):
     print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
-    authorization = base64.b64decode(b64authorization)
-    print(authorization)
+    authorization = b64authorization.decode('base64')
+    print("auth", authorization)
 
     return HttpResponse('Test', content_type='application/text')
     token = ''
@@ -43,8 +43,8 @@ def authenticate(request):
 def signup(request):
     print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
-    authorization = base64.b64decode(b64authorization)
-    print(authorization)
+    authorization = b64authorization.decode('base64')
+    print("auth", authorization)
     return HttpResponse('Test', content_type='application/text')
 
     token = ''
