@@ -35,22 +35,23 @@ def toggleDomain(request, d):
     username = str(b64authorization.decode('base64'))
     
     user = User.objects.get(username=username)
+    user.domains = []
     
-    print('before', user.domain_list)
+    print('before', user.domains)
     
-    if domain in user.domain_list:
+    if domain in user.domains:
         print 'toggling off'
-        while domain in user.domain_list:
-            user.domain_list.remove(domain)
+        while domain in user.domains:
+            user.domains.remove(domain)
     else:
         print 'toggling on'
-        user.domain_list.append(domain)
+        user.domains.append(domain)
         
     user.save()
         
-    print('after', user.domain_list)
+    print('after', user.domains)
 
-    return HttpResponse(str(user.domain_list), content_type='application/text')
+    return HttpResponse(str(user.domains), content_type='application/text')
 
 
 def authenticate(request):
