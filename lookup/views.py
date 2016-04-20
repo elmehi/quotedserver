@@ -239,6 +239,7 @@ def googleTop(text):
     ddate = date.today()
     try:
         res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
+        print res
         print res['totalResults']
         print int(res['totalResults'])
         
