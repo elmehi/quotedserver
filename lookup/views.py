@@ -22,12 +22,13 @@ def authenticate(request):
     print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
     authorization = b64authorization.decode('base64')
-    print("auth", authorization)
+    auths = str.split(authorization, ':')
+    # print("auth", authorization)
 
-    return HttpResponse('Test', content_type='application/text')
-    token = ''
-    u = request.value
-    p = request.value
+    # return HttpResponse('Test', content_type='application/text')
+    u = auths[0]
+    p = auths[1]
+    token = auths[2]
 
     if User.objects.filter(username=u).exists():
         user = User.objects.get(username=u)
@@ -44,12 +45,14 @@ def signup(request):
     print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
     authorization = b64authorization.decode('base64')
-    print("auth", authorization)
-    return HttpResponse('Test', content_type='application/text')
+    # print("auth", authorization)
+    auths = str.split(authorization, ':')
 
-    token = ''
-    u = request.value
-    p = request.value
+    # return HttpResponse('Test', content_type='application/text')
+
+    u = auths[0]
+    p = auths[1]
+    token = auths[2]
 
     if User.objects.filter(username=u).exists():
         return HttpResponse(token, content_type='application/text')
