@@ -19,7 +19,7 @@ import base64
 #     return render(request, 'db.html', {'sources': sources})
 
 def toggleDomain(request, domain):
-    d = domain.value
+    d = domain
     b64authorization = request.META['HTTP_AUTHORIZATION']
     u = b64authorization.decode('base64')
 
