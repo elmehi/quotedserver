@@ -42,7 +42,7 @@ def getValidDomains(request):
     
     return HttpResponse(json.dumps(user.domains), content_type='application/text')
 
-def toggleDomain(request, d):)
+def toggleDomain(request, d):
     user = userFromRequest(request)
     
     print('before', user.domains)
