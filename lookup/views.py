@@ -19,8 +19,6 @@ import base64
 #     return render(request, 'db.html', {'sources': sources})
 
 def userFromRequest(request):
-    domain = str(d.decode('base64'))
-    
     b64authorization = request.META['HTTP_AUTHORIZATION']
     username = str(b64authorization.decode('base64'))
     
@@ -43,6 +41,8 @@ def getValidDomains(request):
     return HttpResponse(json.dumps(user.domains), content_type='application/text')
 
 def toggleDomain(request, d):
+    domain = str(d.decode('base64'))
+    
     user = userFromRequest(request)
     
     print('before', user.domains)
