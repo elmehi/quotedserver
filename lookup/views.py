@@ -18,6 +18,15 @@ import base64
 
 #     return render(request, 'db.html', {'sources': sources})
 
+def userFromRequest(request):
+    domain = str(d.decode('base64'))
+    
+    b64authorization = request.META['HTTP_AUTHORIZATION']
+    username = str(b64authorization.decode('base64'))
+    
+    return User.objects.get(username=username)
+
+
 def getHistory(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
     u = b64authorization.decode('base64')
@@ -28,13 +37,13 @@ def getHistory(request):
     reqs = json.dumps(reqs)
     return HttpResponse(reqs, content_type='application/json')
 
-def toggleDomain(request, d):
-    domain = str(d.decode('base64'))
+def getValidDomains(request):
+    user = userFromRequest(request)
     
-    b64authorization = request.META['HTTP_AUTHORIZATION']
-    username = str(b64authorization.decode('base64'))
-    
-    user = User.objects.get(username=username)
+    return HttpResponse(json.dumps(user.domains), content_type='application/text')
+
+def toggleDomain(request, d):)
+    user = userFromRequest(request)
     
     print('before', user.domains)
     
