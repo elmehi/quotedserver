@@ -20,17 +20,16 @@ import base64
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
-    username = str(b64authorization.decode('base64'))
+    username = str(b64authorization.decode('base64')).split(':')[0]
     
     return User.objects.get(username=username)
 
-
 def getHistory(request):
-    b64authorization = request.META['HTTP_AUTHORIZATION']
-    u = b64authorization.decode('base64')
-
-    r = Request.objects.filter(user_id=u)
+    user = userFromRequest(request)
+    print user
+    r = Request.objects.filter(user=user)
     reqs = list(r)
+    print reqs
 
     reqs = json.dumps(reqs)
     return HttpResponse(reqs, content_type='application/json')
@@ -127,12 +126,12 @@ def results(request, quote):
     #if not cached initiate API request
     else:
         # print "not from db"
-        return googleTop(text)
+        return googleTop(text, userFromRequest(request))
 
 
 
 # by josh
-def googleFirst(text):
+def googleFirst(text, u):
     #metatags related to dates:
     datekeys = {'article:published_time','Pubdate', 'ptime', 'utime', 'displaydate', 'dat', 'date', 'datetime', 'datePublished', 'datepublished', 'dc.date', 'og:pubdate', 'pubdate', 'datecreated', 'pud', 'pdate'}
 
@@ -224,7 +223,7 @@ def googleFirst(text):
     newSource.save()
 
     #create request and put in db
-    newRequest = Request(user_id=1, request_date=date.today(), request_source=newSource)
+    newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
     newRequest.save()
 
     pageinfo = json.dumps(pageinfo)
@@ -234,7 +233,7 @@ def googleFirst(text):
 
 
 # by meir
-def googleTop(text):
+def googleTop(text, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     stypes=["newsarticle", "webpage", "blogposting", "article"]
@@ -276,13 +275,13 @@ def googleTop(text):
 
         newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
         newSource.save()
-        newRequest = Request(user_id=1, request_date=date.today(), request_source=newSource)
+        newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
         newRequest.save()
 
         pageinfo = json.dumps(pageinfo)
         
         print "SUCCESS"
-        print(pageinfo)
+        print pageinfo
         print ddate
         
         return HttpResponse(pageinfo, content_type='application/json')
