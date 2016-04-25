@@ -22,3 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^test/', tests.getPage),
 ]
+
+
+
+#dxrctfvygubhij
