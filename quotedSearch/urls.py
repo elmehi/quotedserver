@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from . import tests
 
 urlpatterns = [
     url(r'^lookup/', include('lookup.urls')),
-    url(r'^tests/', include('tests.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^test/', tests.getPage),
 ]
