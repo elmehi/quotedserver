@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^getvaliddomains/$', views.getValidDomains, name='domain_lookup'),
     url(r'^gethistory/$', views.getHistory, name='get_history'),
     url(r'^gethighlightedstate/$', views.getHighlightingState, name='get_highlighting_state')
+    url(r'^sethighlightedstate/(?P<state>.+)/$', views.setHighlightingState, name='set_highlighting_state')
 ]
