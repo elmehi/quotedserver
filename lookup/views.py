@@ -25,6 +25,8 @@ import base64
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
     username = str(b64authorization.decode('base64')).split(':')[0]
+    print b64authorization.decode('base64')
+    print username
     
     return User.objects.get(username=username)
 
