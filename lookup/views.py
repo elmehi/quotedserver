@@ -105,7 +105,7 @@ def signup(request):
         return HttpResponse(token, content_type='application/text')
 
 def results(request, quote):
-    text = urllib.unquote(quote).decode('utf8')
+    text = urllib.unquote(quote).decode('utf-8')
     print text
 
     #check if source in db, if so pull from db
