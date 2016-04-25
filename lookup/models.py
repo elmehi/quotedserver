@@ -26,6 +26,6 @@ class User(models.Model):
 		return self.username
 
 class Request(models.Model):
-	user = models.ForeignKey('User', on_delete=models.DO_NOTHING)
+	user = models.ForeignKey('User', on_delete=models.DO_NOTHING, null=True)
 	request_date = models.DateTimeField(default=django.utils.timezone.now)
 	request_source = models.ForeignKey('Source', on_delete=models.DO_NOTHING)

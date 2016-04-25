@@ -113,7 +113,7 @@ def results(request, quote):
         s = Source.objects.get(source_quote = text)
 
         #create request and put in db
-        newRequest = Request(user_id=1, request_date=date.today(), request_source=s)
+        newRequest = Request(user=userFromRequest(request), request_date=date.today(), request_source=s)
         newRequest.save()
 
         pageinfo = {
