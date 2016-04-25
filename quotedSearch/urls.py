@@ -19,4 +19,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^lookup/', include('lookup.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^tests/', tests.getPage),
 ]
