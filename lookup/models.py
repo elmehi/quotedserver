@@ -17,16 +17,16 @@ class Source(models.Model):
 
 class User(models.Model):
     highlighting_state = models.IntegerField()
-	username = models.CharField(max_length = 200)
-	password = models.CharField(max_length = 20)
-	highlight_url = models.BooleanField(default = True)
-	date_created = models.DateTimeField(default=django.utils.timezone.now)
-	domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
+    username = models.CharField(max_length = 200)
+    password = models.CharField(max_length = 20)
+    highlight_url = models.BooleanField(default = True)
+    date_created = models.DateTimeField(default=django.utils.timezone.now)
+    domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
     
-	def __str__(self):
-		return self.username
+    def __str__(self):
+        return self.username
 
 class Request(models.Model):
-	user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-	request_date = models.DateTimeField(default=django.utils.timezone.now)
-	request_source = models.ForeignKey(Source, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    request_date = models.DateTimeField(default=django.utils.timezone.now)
+    request_source = models.ForeignKey(Source, on_delete=models.DO_NOTHING)
