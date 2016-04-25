@@ -38,6 +38,7 @@ def setHighlightingState(request, state):
     u = userFromRequest(request)
     print state
     u.highlighting_state = int(state)
+    u.save()
     return HttpResponse(str(u.highlighting_state), content_type='application/text')
 
 def getHistory(request):
