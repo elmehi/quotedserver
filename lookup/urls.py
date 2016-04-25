@@ -9,6 +9,6 @@ urlpatterns = [
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^toggledomain/(?P<d>.+)/$', views.toggleDomain, name='domain_toggle'),
     url(r'^getvaliddomains/$', views.getValidDomains, name='domain_lookup'),
-    url(r'^gethistory/$', views.getHistory, name='get_history')
+    url(r'^gethistory/$', views.getHistory, name='get_history'),
     url(r'^gethighlightingstate/$', views.getHighlightingState, name='get_highlighting_state')
 ]
