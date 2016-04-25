@@ -28,11 +28,9 @@ def getHistory(request):
     user = userFromRequest(request)
     print user
     r = Request.objects.filter(user=user)
-    reqs = list(r)
-    print reqs
+    reqs = [{'url': req.request_source.source_url, 'date': req.request_date} for req in list(r)]
 
-    reqs = json.dumps(reqs)
-    return HttpResponse(reqs, content_type='application/json')
+    return HttpResponse(json.dumps(reqs), content_type='application/json')
 
 def getValidDomains(request):
     user = userFromRequest(request)
