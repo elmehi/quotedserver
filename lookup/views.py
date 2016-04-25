@@ -30,6 +30,10 @@ def userFromRequest(request):
     
     return User.objects.get(username=username)
 
+def getHighlightingState(request):
+    u = userFromRequest(request)
+    return HttpResponse(str(u.highlighting_state), content_type='application/text')
+
 def getHistory(request):
     user = userFromRequest(request)
     r = Request.objects.filter(user=user)
