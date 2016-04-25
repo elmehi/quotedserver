@@ -16,11 +16,11 @@ class Source(models.Model):
         return self.source_quote
 
 class User(models.Model):
+    highlighting_state = models.IntegerField()
 	username = models.CharField(max_length = 200)
 	password = models.CharField(max_length = 20)
 	highlight_url = models.BooleanField(default = True)
 	date_created = models.DateTimeField(default=django.utils.timezone.now)
-    highlighting_state = models.IntegerField()
 	domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
     
 	def __str__(self):
