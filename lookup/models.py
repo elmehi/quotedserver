@@ -20,8 +20,8 @@ class User(models.Model):
 	password = models.CharField(max_length = 20)
 	highlight_url = models.BooleanField(default = True)
 	date_created = models.DateTimeField(default=django.utils.timezone.now)
+    highlighting_state = models.IntegerField()
 	domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
-    highlighting_state = fields.IntegerField(min_value=0, max_value=2)
     
 	def __str__(self):
 		return self.username
