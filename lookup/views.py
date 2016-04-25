@@ -1,3 +1,4 @@
+# encoding=utf8  
 # import requests
 # from django.shortcuts import render
 from django.http import HttpResponse
@@ -8,6 +9,9 @@ from datetime import datetime, date, timedelta
 import dateutil.parser
 import urllib
 import base64
+# import sys  
+
+
 
 
 # returns all sources in database
@@ -105,7 +109,7 @@ def signup(request):
         return HttpResponse(token, content_type='application/text')
 
 def results(request, quote):
-    text = urllib.unquote(quote).decode('utf-8')
+    text = urllib.unquote(quote).encode('utf-8')
     print text
 
     #check if source in db, if so pull from db
