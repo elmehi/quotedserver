@@ -30,9 +30,9 @@ def userFromRequest(request):
 
 def getHistory(request):
     user = userFromRequest(request)
-    print user
     r = Request.objects.filter(user=user)
-    reqs = [{'url': req.request_source.source_url, 'date': req.request_date} for req in list(r)]
+    reqs = [{'url': req.request_source.source_url, 'date': str(req.request_date)} for req in list(r)]
+    print reqs
 
     return HttpResponse(json.dumps(reqs), content_type='application/json')
 
