@@ -9,18 +9,6 @@ from datetime import datetime, date, timedelta
 import dateutil.parser
 import urllib
 import base64
-# import sys  
-
-
-
-
-# returns all sources in database
-# def db(request):
-#     sources = Source()
-#     sources.save()
-#     sources = Source.objects.all()
-
-#     return render(request, 'db.html', {'sources': sources})
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -29,6 +17,80 @@ def userFromRequest(request):
     print username
     
     return User.objects.get(username=username)
+    
+def getTrustedSources(request):
+    user = userFromRequest(request)
+    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json')
+    
+def getUntrustedSources(request):
+    user = userFromRequest(request)
+    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json')
+
+def addTrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    user.trusted_sources.append(domain)
+    user.save()
+    
+    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json')
+
+def toggleTrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    if domain in user.trusted_sources:
+        user.trusted_sources.remove(domain)
+    else:
+        user.trusted_sources.append(domain)
+        
+    user.save()
+    
+    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json')
+
+def removeTrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    if domain in user.trusted_sources:
+        user.trusted_sources.remove(domain)
+    
+    user.save()
+    
+    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json')
+
+def addUntrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    user.untrusted_sources.append(domain)
+    user.save()
+    
+    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json')
+
+def toggleUntrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    if domain in user.untrusted_sources:
+        user.untrusted_sources.remove(domain)
+    else:
+        user.untrusted_sources.append(domain)
+    
+    user.save()
+    
+    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json')
+
+def removeUntrustedSource(request, domain):
+    domain = str(domain.decode('base64'))
+    user = userFromRequest(request)
+    
+    if domain in user.untrusted_sources:
+        user.untrusted_sources.remove(domain)
+    
+    user.save()
+    
+    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json'))
 
 def getHighlightingState(request):
     u = userFromRequest(request)
@@ -56,22 +118,14 @@ def getValidDomains(request):
 
 def toggleDomain(request, d):
     domain = str(d.decode('base64'))
-    
     user = userFromRequest(request)
     
-    print('before', user.domains)
-    
     if domain in user.domains:
-        print 'toggling off'
-        while domain in user.domains:
-            user.domains.remove(domain)
+        user.domains.remove(domain)
     else:
-        print 'toggling on'
         user.domains.append(domain)
         
     user.save()
-        
-    print('after', user.domains)
 
     return HttpResponse(json.dumps(user.domains), content_type='application/text')
 

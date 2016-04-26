@@ -22,6 +22,8 @@ class User(models.Model):
     highlight_url = models.BooleanField(default = True)
     date_created = models.DateTimeField(default=django.utils.timezone.now)
     domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
+    trusted_sources = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
+    untrusted_sources = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
     
     def __str__(self):
         return self.username
