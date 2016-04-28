@@ -321,7 +321,7 @@ def googleTop(text, u):
         print res
         # print res
         first = res["items"][0]
-        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':' '}
+        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':str(ddate)}
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): pageinfo["name"] = meta["og:site_name"]
@@ -344,7 +344,7 @@ def googleTop(text, u):
 
         newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
         newSource.save()
-        newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
+        newRequest = Request(user=u, request_date=pageinfo['date'], request_source=newSource)
         newRequest.save()
 
         pageinfo = json.dumps(pageinfo)
