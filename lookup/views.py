@@ -20,11 +20,11 @@ def userFromRequest(request):
     
 def getTrustedSources(request):
     user = userFromRequest(request)
-    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
     
 def getUntrustedSources(request):
     user = userFromRequest(request)
-    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
 def addTrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -33,7 +33,7 @@ def addTrustedSource(request, domain):
     user.trusted_sources.append(domain)
     user.save()
     
-    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
 def toggleTrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -46,7 +46,7 @@ def toggleTrustedSource(request, domain):
         
     user.save()
     
-    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
 def removeTrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -57,7 +57,7 @@ def removeTrustedSource(request, domain):
     
     user.save()
     
-    return HttpResponse(json.dumps(user.trusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
 def addUntrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -66,7 +66,7 @@ def addUntrustedSource(request, domain):
     user.untrusted_sources.append(domain)
     user.save()
     
-    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
 def toggleUntrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -79,7 +79,7 @@ def toggleUntrustedSource(request, domain):
     
     user.save()
     
-    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
 def removeUntrustedSource(request, domain):
     domain = str(domain.decode('base64'))
@@ -90,7 +90,7 @@ def removeUntrustedSource(request, domain):
     
     user.save()
     
-    return HttpResponse(json.dumps(user.untrusted_sources, content_type='application/json'))
+    return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
 def getHighlightingState(request):
     u = userFromRequest(request)
