@@ -26,67 +26,67 @@ def getUntrustedSources(request):
     user = userFromRequest(request)
     return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
-def addTrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def addTrustedSource(request, trusted):
+    trusted = str(trusted.decode('base64'))
     user = userFromRequest(request)
     
-    user.trusted_sources.append(domain)
+    user.trusted_sources.append(trusted)
     user.save()
     
     return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
-def toggleTrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def toggleTrustedSource(request, trusted):
+    trusted = str(trusted.decode('base64'))
     user = userFromRequest(request)
     
-    if domain in user.trusted_sources:
-        user.trusted_sources.remove(domain)
+    if trusted in user.trusted_sources:
+        user.trusted_sources.remove(trusted)
     else:
-        user.trusted_sources.append(domain)
+        user.trusted_sources.append(trusted)
         
     user.save()
     
     return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
-def removeTrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def removeTrustedSource(request, trusted):
+    trusted = str(trusted.decode('base64'))
     user = userFromRequest(request)
     
-    if domain in user.trusted_sources:
-        user.trusted_sources.remove(domain)
+    if trusted in user.trusted_sources:
+        user.trusted_sources.remove(trusted)
     
     user.save()
     
     return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
-def addUntrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def addUntrustedSource(request, untrusted):
+    untrusted = str(untrusted.decode('base64'))
     user = userFromRequest(request)
     
-    user.untrusted_sources.append(domain)
+    user.untrusted_sources.append(untrusted)
     user.save()
     
     return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
-def toggleUntrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def toggleUntrustedSource(request, untrusted):
+    untrusted = str(untrusted.decode('base64'))
     user = userFromRequest(request)
     
-    if domain in user.untrusted_sources:
-        user.untrusted_sources.remove(domain)
+    if untrusted in user.untrusted_sources:
+        user.untrusted_sources.remove(untrusted)
     else:
-        user.untrusted_sources.append(domain)
+        user.untrusted_sources.append(untrusted)
     
     user.save()
     
     return HttpResponse(json.dumps(user.untrusted_sources), content_type='application/json')
 
-def removeUntrustedSource(request, domain):
-    domain = str(domain.decode('base64'))
+def removeUntrustedSource(request, untrusted):
+    untrusted = str(untrusted.decode('base64'))
     user = userFromRequest(request)
     
-    if domain in user.untrusted_sources:
-        user.untrusted_sources.remove(domain)
+    if untrusted in user.untrusted_sources:
+        user.untrusted_sources.remove(untrusted)
     
     user.save()
     
