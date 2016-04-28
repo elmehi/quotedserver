@@ -36,7 +36,10 @@ def addTrustedSource(request, trusted):
     return HttpResponse(json.dumps(user.trusted_sources), content_type='application/json')
 
 def toggleTrustedSource(request, trusted):
+    print "TRUSTED TOGGLE"
+    print trusted
     trusted = str(trusted.decode('base64'))
+    print trusted
     user = userFromRequest(request)
     
     if trusted in user.trusted_sources:
