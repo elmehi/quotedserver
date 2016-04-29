@@ -177,12 +177,11 @@ def signup(request):
         return HttpResponse(token, content_type='application/text')
 
 def results(request, quote):
-    text = str(quote.decode('base64'))
-    print text
+    quote_text = str(quote.decode('base64'))
 
     #check if source in db, if so pull from db
-    if Source.objects.filter(source_quote = text).exists():
-        s = Source.objects.get(source_quote = text)
+    if Source.objects.filter(source_quote = quote_text).exists():
+        s = Source.objects.get(source_quote = quote_text)
 
         #create request and put in db
         newRequest = Request(user=userFromRequest(request), request_date=date.today(), request_source=s)
@@ -198,7 +197,7 @@ def results(request, quote):
     #if not cached initiate API request
     else:
         # print "not from db"
-        return googleTop(text, userFromRequest(request))
+        return googleTop(quote_text, userFromRequest(request))
 
 
 
@@ -302,29 +301,24 @@ def googleFirst(text, u):
     return HttpResponse(pageinfo, content_type='application/json')
 
 
-
-
 # by meir
-def googleTop(text, u):
+def googleTop(quote_text, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     stypes=["newsarticle", "webpage", "blogposting", "article"]
     ddate = date.today()
     try:
-        res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm', exactTerms=text).execute()
-        print res
+        res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
-        print tot
-        print int(tot)
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = text, cx='006173695502366383915:cqpxathvhhm').execute()
+            res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
         
         print res
         # print res
         first = res["items"][0]
-        pageinfo = {'quote':text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':str(ddate)}
+        pageinfo = {'quote':quote_text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':str(ddate)}
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): pageinfo["name"] = meta["og:site_name"]
@@ -349,14 +343,16 @@ def googleTop(text, u):
         newSource.save()
         newRequest = Request(user=u, request_date=pageinfo['date'], request_source=newSource)
         newRequest.save()
+        
+        pageinfo['other_matches'] = res["items"][1:5]
+        
+        print pageinfo['other_matches']
 
-        pageinfo = json.dumps(pageinfo)
+        pageinfo_text = json.dumps(pageinfo)
         
         print "SUCCESS"
-        print pageinfo
-        print ddate
         
-        return HttpResponse(pageinfo, content_type='application/json')
+        return HttpResponse(pageinfo_text, content_type='application/json')
     except Exception as e:
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
