@@ -192,7 +192,7 @@ def results(request, quote):
             'name':         s.source_name, 
             'date':         str(s.source_date),
             'other_matches':s.other_matches,
-            'cached'        'y'
+            'cached':       'y'
         }
         
         pageinfo = json.dumps(pageinfo)
@@ -344,29 +344,33 @@ def googleTop(quote_text, u):
                 if "datepublished" in site_type_data:
                     # Attempt to parse the date string - break only if successful
                     try:
-                        date_published_est = dateutil.parse(site_type_data["datepublished"])
+                        date_published_est = dateutil.parser.parse(site_type_data["datepublished"])
                     except ValueError:
                         continue
                     break
 
         # This creates an array of tuples containing (article_title, url) for each source
-        other_matches = [(item['title'], item['link']) for item in res['items'][1:max(1, len(res['items']))]]
+        other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
+        other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
         
         pageinfo = {
-                    'quote':        quote_text, 
-                    'url':          first["link"], 
-                    'title':        first["title"], 
-                    'name':         source_name, 
-                    'date':         date_published_est.strftime('%c'),
-                    'other_matches':other_matches
+                    'quote':                quote_text, 
+                    'url':                  first["link"], 
+                    'title':                first["title"], 
+                    'name':                 source_name, 
+                    'date':                 date_published_est.strftime('%c'),
+                    'other_article_urls':   other_urls,
+                    'other_article_titles': other_titles,
+                    'cached':               'n'
                     }
         
-        newSource = Source(source_quote=    pageinfo['quote'], 
-                            source_url=     pageinfo['url'], 
-                            source_title=   pageinfo["title"], 
-                            source_name=    pageinfo['name'], 
-                            source_date=    pageinfo['date'],
-                            other_matches=  [SecondarySource(source_url=m[0], article_title=m[1]) for m in other_matches]
+        newSource = Source(source_quote=            pageinfo['quote'], 
+                            source_url=             pageinfo['url'], 
+                            source_title=           pageinfo["title"], 
+                            source_name=            pageinfo['name'], 
+                            source_date=            pageinfo['date'],
+                            other_article_urls=     pageinfo['other_article_urls'],
+                            other_article_titles=   pageinfo['other_article_titles']
                             )
         newSource.save()
         newRequest = Request(user=u, request_date=pageinfo['date'], request_source=newSource)

@@ -4,13 +4,6 @@ from django.db import models
 from django.contrib.postgres import fields
 import datetime
 
-class SecondarySource(models.Model):
-    source_url = models.TextField()
-    article_title = models.TextField()
-    
-    def __str__(self):
-        return self.article_title
-
 # A source model.
 class Source(models.Model):
     source_quote = models.TextField()
@@ -18,7 +11,8 @@ class Source(models.Model):
     source_title = models.TextField()
     source_name = models.TextField()
     source_date = models.DateTimeField(default=django.utils.timezone.now)
-    other_matches = fields.ArrayField(models.ForeignKey(SecondarySource, on_delete=models.CASCADE), blank=True, default=list)
+    other_article_urls = fields.ArrayField(models.TextField(), blank=True, default=list)
+    other_article_titles = fields.ArrayField(models.TextField(), blank=True, default=list)
     
     def __str__(self):
         return self.source_quote
