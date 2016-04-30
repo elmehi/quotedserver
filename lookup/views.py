@@ -386,6 +386,7 @@ def googleTop(quote_text, u):
         return HttpResponse(pageinfo_text, content_type='application/json')
     except Exception as e:
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
+        print str(e)
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
         message = template.format(type(e).__name__, e.args)
         print message
