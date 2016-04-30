@@ -304,7 +304,11 @@ def googleFirst(text, u):
                 }
 
     #create source object and put in db
-    newSource = Source(source_quote=text, source_url=first["link"], source_title=first["title"], source_name=' ', source_date=str(mindate))
+    newSource = Source(source_quote=text, 
+                        source_url=first["link"], 
+                        source_title=first["title"], 
+                        source_name=' ', 
+                        source_date=mindate)
     newSource.save()
 
     #create request and put in db
@@ -337,7 +341,7 @@ def googleTop(quote_text, u):
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): 
                 source_name = meta["og:site_name"]
-        print "start"
+                
         for type in site_types:
             if type in pagemap:
                 site_type_data = pagemap[type][0]
@@ -345,13 +349,11 @@ def googleTop(quote_text, u):
                     # Attempt to parse the date string - break only if successful
                     try:
                         date_published_est = dateutil.parser.parse(site_type_data["datepublished"])
-                        print "_" + date_published_est
                     except ValueError:
                         date_published_est = date.today()
                         continue
                     break
 
-        print date_published_est
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
@@ -371,7 +373,7 @@ def googleTop(quote_text, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            pageinfo['date'],
+                            source_date=            date_published_est,
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles']
                             )
