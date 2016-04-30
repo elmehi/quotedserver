@@ -101,7 +101,6 @@ def getHighlightingState(request):
 
 def setHighlightingState(request, state):
     u = userFromRequest(request)
-    print state
     u.highlighting_state = int(state)
     u.save()
     return HttpResponse(str(u.highlighting_state), content_type='application/text')
@@ -131,7 +130,6 @@ def toggleDomain(request, d):
     user.save()
 
     return HttpResponse(json.dumps(user.domains), content_type='application/text')
-
 
 def authenticate(request):
     print request.META
@@ -188,10 +186,17 @@ def results(request, quote):
         newRequest.save()
 
         pageinfo = {
-            'quote':s.source_quote, 'url':s.source_url, 'title':s.source_title, 'name':s.source_name, 'date':str(s.source_date)
+            'quote':        s.source_quote, 
+            'url':          s.source_url, 
+            'title':        s.source_title, 
+            'name':         s.source_name, 
+            'date':         str(s.source_date),
+            'other_matches':s.other_matches,
+            'cached'        'y'
         }
+        
         pageinfo = json.dumps(pageinfo)
-        # print "from db"
+        
         return HttpResponse(pageinfo, content_type='application/json')
 
     #if not cached initiate API request
@@ -287,7 +292,14 @@ def googleFirst(text, u):
 
     print 'earliest entry: '
 
-    pageinfo = {'quote':text, 'title': first["title"], 'url': first["link"], 'source': ' ', 'date': str(mindate)}
+    pageinfo = {
+                'quote':    text, 
+                'title':    first["title"], 
+                'url':      first["link"], 
+                'source':   ' ', 
+                'date':     str(mindate),
+                'cached':   'n'
+                }
 
     #create source object and put in db
     newSource = Source(source_quote=text, source_url=first["link"], source_title=first["title"], source_name=' ', source_date=str(mindate))
@@ -305,8 +317,7 @@ def googleFirst(text, u):
 def googleTop(quote_text, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
-    stypes=["newsarticle", "webpage", "blogposting", "article"]
-    ddate = date.today()
+    site_types=["newsarticle", "webpage", "blogposting", "article"]
     try:
         res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
@@ -316,41 +327,52 @@ def googleTop(quote_text, u):
             res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
         
         print res
-        # print res
+        
         first = res["items"][0]
-        pageinfo = {'quote':quote_text, 'url': first["link"], 'title': first["title"], 'name':' ', 'date':str(ddate)}
+        pagemap = first['pagemap']
+        date_published_est = date.today()
+        source_name = ' '
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
-            if "og:site_name" in meta.keys(): pageinfo["name"] = meta["og:site_name"]
+            if "og:site_name" in meta.keys(): 
+                pageinfo["name"] = meta["og:site_name"]
         
-        for t in stypes:
-            if t in first["pagemap"].keys():
-                print t + "is found"
-                stype = first["pagemap"][t][0]
-                if "datepublished" in stype.keys():
-                    ddate = stype["datepublished"]
-                    # print [int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10])]
-                    # ddate = datetime(int(ddate[:4]), int(ddate[5:7]), int(ddate[8:10]))
-                    # pageinfo["date"] = ddate.strftime('%B %d %Y')
-                    pageinfo["date"] = str(ddate)
+        
+        for type in site_types:
+            if type in pagemap:
+                site_type_data = pagemap[type][0]
+                if "datepublished" in site_type_data:
+                    # Attempt to parse the date string - break only if successful
+                    try:
+                        date_published_est = dateutil.parse(site_type_data["datepublished"])
+                    except ValueError:
+                        continue
+                    break
 
-                else:
-                    print "date published not found"
-                    ddate = date.today()
-                    pageinfo["date"] = str(ddate)
-
-        newSource = Source(source_quote=pageinfo['quote'], source_url=pageinfo['url'], source_title=pageinfo["title"], source_name=pageinfo['name'], source_date=pageinfo['date'])
+        # This creates an array of tuples containing (article_title, url) for each source
+        other_matches = [(item['title'], item['link']) for item in res['items'][1:max(1, len(res['items']))]]
+        
+        pageinfo = {
+                    'quote':        quote_text, 
+                    'url':          first["link"], 
+                    'title':        first["title"], 
+                    'name':         source_name, 
+                    'date':         date_published_est.strftime('%c'),
+                    'other_matches':other_matches
+                    }
+        
+        newSource = Source(source_quote=    pageinfo['quote'], 
+                            source_url=     pageinfo['url'], 
+                            source_title=   pageinfo["title"], 
+                            source_name=    pageinfo['name'], 
+                            source_date=    pageinfo['date'],
+                            other_matches=  [SecondarySource(source_url=m[0], article_title=m[1]) for m in other_matches]
+                            )
         newSource.save()
         newRequest = Request(user=u, request_date=pageinfo['date'], request_source=newSource)
         newRequest.save()
-        
-        pageinfo['other_matches'] = res["items"][1:5]
-        
-        print pageinfo['other_matches']
 
         pageinfo_text = json.dumps(pageinfo)
-        
-        print "SUCCESS"
         
         return HttpResponse(pageinfo_text, content_type='application/json')
     except Exception as e:
