@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from .models import Source, Request, User
 import json
 from datetime import datetime, date, timedelta
+from django.utils.dateparse import parse_datetime
 import dateutil.parser
 import urllib
 import base64
@@ -256,7 +257,7 @@ def googleFirst(text, u):
                         for key in datekeys:
                             if key in meta[0]:
                                 try:
-                                    currdate = (dateutil.parser.parse(meta[0][key])).date()
+                                    currdate = (parse_datetime(meta[0][key])).date()
                                     print currdate # for debugging purposes
 
                                     #update earliest date & earliest hit
@@ -272,7 +273,7 @@ def googleFirst(text, u):
                         for key in datekeys:
                             if key in article[0]:
                                 try:
-                                    currdate = (dateutil.parser.parse(article[0][key])).date()
+                                    currdate = (parse_datetime(article[0][key])).date()
                                     print currdate
                                     if currdate < mindate:
                                         mindate = currdate
@@ -348,7 +349,7 @@ def googleTop(quote_text, u):
                 if "datepublished" in site_type_data:
                     # Attempt to parse the date string - break only if successful
                     try:
-                        date_published_est = dateutil.parser.parse(site_type_data["datepublished"])
+                        date_published_est = parse_datetime(site_type_data["datepublished"])
                     except ValueError as e:
                         print "DATE PARSE ERROR" + str(e)
                         date_published_est = date.today()
@@ -379,7 +380,7 @@ def googleTop(quote_text, u):
                             other_article_titles=   pageinfo['other_article_titles']
                             )
         newSource.save()
-        newRequest = Request(user=u, request_date=pageinfo['date'], request_source=newSource)
+        newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
         newRequest.save()
 
         pageinfo_text = json.dumps(pageinfo)
