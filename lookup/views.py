@@ -334,11 +334,11 @@ def googleTop(quote_text, u):
         pagemap = first['pagemap']
         date_published_est = date.today()
         source_name = ' '
+        
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): 
-                pageinfo["name"] = meta["og:site_name"]
-        
+                source_name = meta["og:site_name"]
         
         for type in site_types:
             if type in pagemap:
@@ -347,10 +347,13 @@ def googleTop(quote_text, u):
                     # Attempt to parse the date string - break only if successful
                     try:
                         date_published_est = dateutil.parser.parse(site_type_data["datepublished"])
+                        print "_" + date_published_est
                     except ValueError:
+                        date_published_est = date.today()
                         continue
                     break
 
+        print date_published_est
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
