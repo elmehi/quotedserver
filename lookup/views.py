@@ -186,13 +186,14 @@ def results(request, quote):
         newRequest.save()
 
         pageinfo = {
-            'quote':        s.source_quote, 
-            'url':          s.source_url, 
-            'title':        s.source_title, 
-            'name':         s.source_name, 
-            'date':         str(s.source_date),
-            'other_matches':s.other_matches,
-            'cached':       'y'
+            'quote':                s.source_quote, 
+            'url':                  s.source_url, 
+            'title':                s.source_title, 
+            'name':                 s.source_name, 
+            'date':                 s.source_date.strftime('%c'),
+            'other_article_urls':   s.other_article_urls,
+            'other_article_titles': s.other_article_titles,
+            'cached':               'y'
         }
         
         pageinfo = json.dumps(pageinfo)
@@ -292,12 +293,13 @@ def googleFirst(text, u):
 
     print 'earliest entry: '
 
+    # TODO - Also return top hits
     pageinfo = {
                 'quote':    text, 
                 'title':    first["title"], 
                 'url':      first["link"], 
                 'source':   ' ', 
-                'date':     str(mindate),
+                'date':     mindate.strftime('%c'),
                 'cached':   'n'
                 }
 
