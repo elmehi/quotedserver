@@ -349,7 +349,8 @@ def googleTop(quote_text, u):
                     # Attempt to parse the date string - break only if successful
                     try:
                         date_published_est = dateutil.parser.parse(site_type_data["datepublished"])
-                    except ValueError:
+                    except ValueError as e:
+                        print "DATE PARSE ERROR" + str(e)
                         date_published_est = date.today()
                         continue
                     break
@@ -387,8 +388,7 @@ def googleTop(quote_text, u):
     except Exception as e:
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
         print str(e)
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        message = template.format(type(e).__name__, e.args)
+        
         print message
         print "FAIL"
         print e
