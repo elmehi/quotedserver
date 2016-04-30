@@ -328,8 +328,6 @@ def googleTop(quote_text, u):
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
             res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
         
-        print res
-        
         first = res["items"][0]
         pagemap = first['pagemap']
         date_published_est = date.today()
@@ -339,7 +337,7 @@ def googleTop(quote_text, u):
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): 
                 source_name = meta["og:site_name"]
-        
+        print "start"
         for type in site_types:
             if type in pagemap:
                 site_type_data = pagemap[type][0]
