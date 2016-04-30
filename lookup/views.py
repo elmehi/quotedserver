@@ -389,7 +389,6 @@ def googleTop(quote_text, u):
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
         print str(e)
         
-        print message
         print "FAIL"
         print e
         return HttpResponse(str(e))
