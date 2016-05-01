@@ -393,3 +393,4 @@ def googleTop(quote_text, u):
         print "FAIL"
         print e
         return HttpResponse(str(e))
+
