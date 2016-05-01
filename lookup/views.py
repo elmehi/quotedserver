@@ -347,10 +347,9 @@ def googleTop(quote_text, u):
                 site_type_data = pagemap[type][0]
                 if "datepublished" in site_type_data:
                     # Attempt to parse the date string - break only if successful
-                    try:
-                        date_published_est = parse_datetime(site_type_data["datepublished"])
-                    except ValueError as e:
-                        print "DATE PARSE ERROR" + str(e)
+                    date_published_est = parse_datetime(site_type_data["datepublished"])
+                    if date_published_est == None:
+                        print site_type_data["datepublished"]
                         date_published_est = date.today()
                         continue
                     break
