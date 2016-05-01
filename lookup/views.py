@@ -374,7 +374,7 @@ def googleTop(quote_text, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            date_published_est,
+                            source_date=            date_published_est.date(),
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles']
                             )
