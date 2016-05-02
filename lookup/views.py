@@ -193,10 +193,6 @@ def results(request, quote):
             'date':                 s.source_date.strftime('%c'),
             'other_article_urls':   s.other_article_urls,
             'other_article_titles': s.other_article_titles,
-            'other_trusted':        s.other_trusted,
-            'other_untrusted':      s.other_untrusted,
-            'trusted':              s.trusted,
-            'untrusted':            s.untrusted,
             'cached':               'true'
         }
         
@@ -484,26 +480,6 @@ def googleTop(quote_text, metadata, u):
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
         
-        other_trusted = []
-        other_untrusted = []
-        for url in other_urls:
-            trusted, untrusted = False, False
-            for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
-                if trusted_source in url:
-                    trusted = True
-                if untrusted_source in url:
-                    untrusted = True
-            
-            other_trusted.append(trusted)
-            other_untrusted.append(untrusted)
-        
-        primary_trusted, primary_untrusted = False, False
-        for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
-            if trusted_source in url:
-                primary_trusted = True
-            if untrusted_source in url:
-                primary_untrusted = True
-        
         pageinfo = {
                     'quote':                quote_text, 
                     'url':                  first["link"], 
@@ -512,11 +488,7 @@ def googleTop(quote_text, metadata, u):
                     'date':                 date_published_est.strftime('%c'),
                     'other_article_urls':   other_urls,
                     'other_article_titles': other_titles,
-                    'other_trusted':        other_trusted,
-                    'other_untrusted':      other_untrusted,
                     'cached':               'false',
-                    'trusted':              primary_trusted,
-                    'untrusted':            primary_untrusted
                     }
         
         newSource = Source(source_quote=            pageinfo['quote'], 
@@ -526,10 +498,6 @@ def googleTop(quote_text, metadata, u):
                             source_date=            date_published_est.date(),
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles'],
-                            other_trusted=          pageinfo['other_trusted'],
-                            other_untrusted=        pageinfo['other_untrusted'],
-                            trusted=                pageinfo['trusted'],
-                            untrusted=              pageinfo['untrusted']
                             )
         newSource.save()
         newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
