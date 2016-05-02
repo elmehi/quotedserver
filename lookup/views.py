@@ -193,7 +193,7 @@ def results(request, quote):
             'date':                 s.source_date.strftime('%c'),
             'other_article_urls':   s.other_article_urls,
             'other_article_titles': s.other_article_titles,
-            'cached':               'y'
+            'cached':               'true'
         }
         
         return HttpResponse(json.dumps(pageinfo), content_type='application/json')
@@ -320,7 +320,7 @@ def googleFirst(text, u):
                 'url':      first["link"], 
                 'source':   ' ', 
                 'date':     mindate.strftime('%c'),
-                'cached':   'n'
+                'cached':   'false'
                 }
 
     #create source object and put in db
@@ -389,7 +389,19 @@ def googleTop(quote_text, metadata, u):
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
-        print "length = ", len(other_titles), len(other_urls)
+        
+        other_trusted = []
+        other_untrusted = []
+        for url in other_urls:
+            trusted, untrusted = False, False
+            for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
+                if trusted_source in url:
+                    trusted = True
+                if untrusted_source in url:
+                    untrusted = True
+            
+            other_trusted.append(trusted)
+            other_untrusted.append(untrusted)
         
         pageinfo = {
                     'quote':                quote_text, 
@@ -399,7 +411,9 @@ def googleTop(quote_text, metadata, u):
                     'date':                 date_published_est.strftime('%c'),
                     'other_article_urls':   other_urls,
                     'other_article_titles': other_titles,
-                    'cached':               'n'
+                    'other_trusted':        other_trusted,
+                    'other_untrusted':      other_untrusted,
+                    'cached':               'false'
                     }
         
         newSource = Source(source_quote=            pageinfo['quote'], 
@@ -408,7 +422,9 @@ def googleTop(quote_text, metadata, u):
                             source_name=            pageinfo['name'], 
                             source_date=            date_published_est.date(),
                             other_article_urls=     pageinfo['other_article_urls'],
-                            other_article_titles=   pageinfo['other_article_titles']
+                            other_article_titles=   pageinfo['other_article_titles'],
+                            other_trusted=          pageinfo['other_trusted'],
+                            other_untrusted=        pageinfo['other_untrusted']
                             )
         newSource.save()
         newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)

@@ -13,6 +13,8 @@ class Source(models.Model):
     source_date = models.DateTimeField(default=django.utils.timezone.now)
     other_article_urls = fields.ArrayField(models.TextField(), blank=True, default=list)
     other_article_titles = fields.ArrayField(models.TextField(), blank=True, default=list)
+    other_trusted = fields.ArrayField(models.TextField(), blank=True, default=list)
+    other_untrusted = fields.ArrayField(models.TextField(), blank=True, default=list)
     
     def __str__(self):
         return self.source_quote
