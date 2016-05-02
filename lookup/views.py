@@ -3,7 +3,7 @@
 # from django.shortcuts import render
 from django.http import HttpResponse
 from googleapiclient.discovery import build
-from .models import Source, Request, User
+from .models import Source, Request, User, Metadata
 import json
 from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
