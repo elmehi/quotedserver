@@ -5,9 +5,8 @@ from django.http import HttpResponse
 from googleapiclient.discovery import build
 from .models import Source, Request, User
 import json
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
-import dateutil.parser
 import urllib
 import base64
 import embedly
@@ -350,6 +349,7 @@ def googleTop(quote_text, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     site_types=["newsarticle", "webpage", "blogposting", "article"]
+
     try:
         res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
@@ -363,8 +363,8 @@ def googleTop(quote_text, u):
         date_published_est = date.today()
         source_name = ' '
         
-        if first["pagemap"]["metatags"][0]:
-            meta = first["pagemap"]["metatags"][0]
+        if pagemap["metatags"][0]:
+            meta = pagemap["metatags"][0]
             if "og:site_name" in meta.keys(): 
                 source_name = meta["og:site_name"]
                 
@@ -373,10 +373,9 @@ def googleTop(quote_text, u):
                 site_type_data = pagemap[type][0]
                 if "datepublished" in site_type_data:
                     # Attempt to parse the date string - break only if successful
-                    try:
-                        date_published_est = parse_datetime(site_type_data["datepublished"])
-                    except ValueError as e:
-                        print "DATE PARSE ERROR" + str(e)
+                    date_published_est = parse_datetime(site_type_data["datepublished"])
+                    if date_published_est == None:
+                        print site_type_data["datepublished"]
                         date_published_est = date.today()
                         continue
                     break
@@ -384,6 +383,7 @@ def googleTop(quote_text, u):
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
+        print "length = ", len(other_titles), len(other_urls)
         
         pageinfo = {
                     'quote':                quote_text, 
@@ -400,7 +400,7 @@ def googleTop(quote_text, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            date_published_est,
+                            source_date=            date_published_est.date(),
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles']
                             )
@@ -418,5 +418,3 @@ def googleTop(quote_text, u):
         print "FAIL"
         print e
         return HttpResponse(str(e))
-        # JSON = '{"url": "http://www.theatlantic.com/entertainment/archive/2016/03/directors-without-borders/475122/", "title": "THIS IS AN ERROR", "source": "The Atlantic", "date": "January 16, 2016 1:30 EST", "quote":"' + text + '"}'
-        # return HttpResponse(JSON, content_type='application/json')
