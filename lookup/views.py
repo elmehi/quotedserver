@@ -156,7 +156,6 @@ def authenticate(request):
 
 
 def signup(request):
-    print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
     authorization = b64authorization.decode('base64')
     # print("auth", authorization)
@@ -197,13 +196,11 @@ def results(request, quote):
             'cached':               'y'
         }
         
-        pageinfo = json.dumps(pageinfo)
-        
-        return HttpResponse(pageinfo, content_type='application/json')
+        return HttpResponse(json.dumps(pageinfo), content_type='application/json')
 
     #if not cached initiate API request
     else:
-        # print "not from db"
+        print request.META
         b64URL = request.META['RequestOriginURL']
         print b64URL
         URL = b64URL.decode('base64')
