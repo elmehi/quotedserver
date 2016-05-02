@@ -234,7 +234,7 @@ def findDate(pagemap):
                 # Attempt to parse the date string - break only if successful
                 date_published_est = parse_datetime(site_type_data["datepublished"])
                 if date_published_est == None:
-                    print site_type_data["datepublished"]
+                    # print site_type_data["datepublished"]
                     date_published_est = date.today()
                     continue
                 break
@@ -243,7 +243,7 @@ def findDate(pagemap):
 
 
 # this is a hybrid function still in progress
-def googleEarliest(quote, u):
+def googleEarliest(request, quote):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     low = date(1970, 01, 01) # lower bound for date search
