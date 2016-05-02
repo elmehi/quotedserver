@@ -239,6 +239,7 @@ def findDate(pagemap):
                     date_published_est = date.today()
                     continue
                 break
+    print date_published_est
     return date_published_est
 
 
@@ -248,7 +249,8 @@ def googleEarliest(request, quote):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     low = date(1970, 01, 01) # lower bound for date search
-    today = mindate = date.today()
+    today = date.today()
+    mindate = date.today()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
     day = timedelta(days=1) # one-day increment
@@ -274,6 +276,7 @@ def googleEarliest(request, quote):
             high = low + (mindate - low)/2
 
         elif rescount == 1:
+            print "one result"
             first = res["items"][0]
             break
 
