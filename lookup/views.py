@@ -200,21 +200,17 @@ def results(request, quote):
 
     #if not cached initiate API request
     else:
-        print request.META
         b64URL = request.META['HTTP_REQUESTORIGINURL']
-        print b64URL
         URL = b64URL.decode('base64')
-        print URL
         
         metadata = None
         if Metadata.objects.filter(url = URL).exists():
             metadata = Metadata.objects.get(url = URL)
+            
+            print 'metadata from cache', metadata
         else:
             client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
-            print client
             embedly_response = client.extract(URL)
-            
-            print embedly_response
             
             keyword_list = [k['name'] for k in embedly_response['keywords']]
             entity_list = [e['name'] for e in embedly_response['entities']]
@@ -224,8 +220,10 @@ def results(request, quote):
             
             metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
             metadata.save()
+            
+            print metadata
         
-        return googleTop(quote_text, userFromRequest(request))
+        return googleTop(quote_text, metadata, userFromRequest(request))
 
 
 
@@ -342,18 +340,30 @@ def googleFirst(text, u):
 
 
 # by meir
-def googleTop(quote_text, u):
+def googleTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     site_types=["newsarticle", "webpage", "blogposting", "article"]
+    
+    NUM_KEYWORDS_TO_USE = 3
+    NUM_ENTITIES_TO_USE = 2
+    
+    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + 
+                        ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            tot = res['queries']['request'][0]['totalResults']
+            
+            if int(tot) == 0:
+                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
+                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                
         
         first = res["items"][0]
         pagemap = first['pagemap']
