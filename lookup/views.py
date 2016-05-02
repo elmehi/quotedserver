@@ -3,11 +3,13 @@
 # from django.shortcuts import render
 from django.http import HttpResponse
 from googleapiclient.discovery import build
-from .models import Source, Request, User
+from .models import Source, Request, User, Metadata
 import json
 from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
 import urllib
+import base64
+import embedly
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -154,7 +156,6 @@ def authenticate(request):
 
 
 def signup(request):
-    print request.META
     b64authorization = request.META['HTTP_AUTHORIZATION']
     authorization = b64authorization.decode('base64')
     # print("auth", authorization)
@@ -192,17 +193,41 @@ def results(request, quote):
             'date':                 s.source_date.strftime('%c'),
             'other_article_urls':   s.other_article_urls,
             'other_article_titles': s.other_article_titles,
-            'cached':               'y'
+            'other_trusted':        s.other_trusted,
+            'other_untrusted':      s.other_untrusted,
+            'trusted':              s.trusted,
+            'untrusted':            s.untrusted,
+            'cached':               'true'
         }
         
-        pageinfo = json.dumps(pageinfo)
-        
-        return HttpResponse(pageinfo, content_type='application/json')
+        return HttpResponse(json.dumps(pageinfo), content_type='application/json')
 
     #if not cached initiate API request
     else:
-        # print "not from db"
-        return googleTop(quote_text, userFromRequest(request))
+        b64URL = request.META['HTTP_REQUESTORIGINURL']
+        URL = b64URL.decode('base64')
+        
+        metadata = None
+        if Metadata.objects.filter(url = URL).exists():
+            metadata = Metadata.objects.get(url = URL)
+            
+            print 'metadata from cache', metadata
+        else:
+            client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
+            embedly_response = client.extract(URL)
+            
+            keyword_list = [k['name'] for k in embedly_response['keywords']]
+            entity_list = [e['name'] for e in embedly_response['entities']]
+            
+            print keyword_list
+            print entity_list
+            
+            metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
+            metadata.save()
+            
+            print metadata
+        
+        return googleTop(quote_text, metadata, userFromRequest(request))
 
 # this is a hybrid function still in progress
 def googleEarliest(quote_text, u):
@@ -389,7 +414,7 @@ def googleFirst(text, u):
                 'url':      first["link"], 
                 'source':   ' ', 
                 'date':     mindate.strftime('%c'),
-                'cached':   'n'
+                'cached':   'false'
                 }
 
     #create source object and put in db
@@ -409,18 +434,29 @@ def googleFirst(text, u):
 
 
 # by meir
-def googleTop(quote_text, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+def googleTop(quote_text, metadata, u):
+    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
     site_types=["newsarticle", "webpage", "blogposting", "article"]
+    
+    NUM_KEYWORDS_TO_USE = 3
+    NUM_ENTITIES_TO_USE = 2
+    
+    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            tot = res['queries']['request'][0]['totalResults']
+            
+            if int(tot) == 0:
+                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
+                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                
         
         first = res["items"][0]
         pagemap = first['pagemap']
@@ -447,7 +483,26 @@ def googleTop(quote_text, u):
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
-        print "length = ", len(other_titles), len(other_urls)
+        
+        other_trusted = []
+        other_untrusted = []
+        for url in other_urls:
+            trusted, untrusted = False, False
+            for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
+                if trusted_source in url:
+                    trusted = True
+                if untrusted_source in url:
+                    untrusted = True
+            
+            other_trusted.append(trusted)
+            other_untrusted.append(untrusted)
+        
+        primary_trusted, primary_untrusted = False, False
+        for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
+            if trusted_source in url:
+                primary_trusted = True
+            if untrusted_source in url:
+                primary_untrusted = True
         
         pageinfo = {
                     'quote':                quote_text, 
@@ -457,7 +512,11 @@ def googleTop(quote_text, u):
                     'date':                 date_published_est.strftime('%c'),
                     'other_article_urls':   other_urls,
                     'other_article_titles': other_titles,
-                    'cached':               'n'
+                    'other_trusted':        other_trusted,
+                    'other_untrusted':      other_untrusted,
+                    'cached':               'false',
+                    'trusted':              primary_trusted,
+                    'untrusted':            primary_untrusted
                     }
         
         newSource = Source(source_quote=            pageinfo['quote'], 
@@ -466,7 +525,11 @@ def googleTop(quote_text, u):
                             source_name=            pageinfo['name'], 
                             source_date=            date_published_est.date(),
                             other_article_urls=     pageinfo['other_article_urls'],
-                            other_article_titles=   pageinfo['other_article_titles']
+                            other_article_titles=   pageinfo['other_article_titles'],
+                            other_trusted=          pageinfo['other_trusted'],
+                            other_untrusted=        pageinfo['other_untrusted'],
+                            trusted=                pageinfo['trusted'],
+                            untrusted=              pageinfo['untrusted']
                             )
         newSource.save()
         newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
@@ -482,4 +545,3 @@ def googleTop(quote_text, u):
         print "FAIL"
         print e
         return HttpResponse(str(e))
-
