@@ -243,8 +243,8 @@ def googleEarliest(quote_text, u):
     first = {}
 
     # binary search
-    for i in range(0, 15): # temporarily limit the number of searches for each quote
-
+    for i in range(0, 10): # temporarily limit the number of searches for each quote
+        print "itter: ", i
         # end loop if range has been maximally narrowed
         if low >= high: break
 
@@ -523,7 +523,7 @@ def googleTop(quote_text, metadata, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            date_published_est.date(),
+                            source_date=            date_published_est,
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles'],
                             other_trusted=          pageinfo['other_trusted'],
