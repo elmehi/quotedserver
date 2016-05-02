@@ -243,7 +243,7 @@ def findDate(pagemap):
 
 
 # this is a hybrid function still in progress
-def googleEarliest(quote_text, u):
+def googleEarliest(quote, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     low = date(1970, 01, 01) # lower bound for date search
