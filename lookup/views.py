@@ -204,6 +204,99 @@ def results(request, quote):
         # print "not from db"
         return googleTop(quote_text, userFromRequest(request))
 
+# this is a hybrid function still in progress
+def googleEarliest(quote_text, u):
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+    site_types=["newsarticle", "webpage", "blogposting", "article"]
+
+
+    low = date(1970, 01, 01) # lower bound for date search
+    today = mindate = date.today()
+    high = low + (today - low)/2 # begin with midpoint between lower bound and today
+    
+    day = timedelta(days=1) # one-day increment
+    first = {}
+
+    # binary search
+    for i in range(0, 15): # temporarily limit the number of searches for each quote
+
+        # end loop if range has been maximally narrowed
+        if low >= high: break
+
+        #get JSON of results from google with appropriate max date
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote_text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote_text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        res = json.loads((urllib.urlopen(url)).read())
+        rescount = int(res["searchInformation"]["totalResults"]) #number of results
+
+        # for debugging:
+        print rescount, 'low: ' + str(low) + ' high: ' + str(high)
+
+        # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
+        if rescount < 1:
+            low = high + day
+            high = low + (mindate - low)/2
+
+        elif rescount == 1:
+            first = res["items"][0]
+            break
+
+        # for multiple hits and non-maximally narrowed range, find earliest hit
+        else:
+            for pagemap in res["items"]:
+                for type in site_types:
+                    if type in pagemap:
+                        site_type_data = pagemap[type][0]
+                        if "datepublished" in site_type_data:
+                            # Attempt to parse the date string - break only if successful
+                            date_published_est = parse_datetime(site_type_data["datepublished"])
+                            if date_published_est == None:
+                                print site_type_data["datepublished"]
+                                date_published_est = date.today()
+                                continue
+                            break
+
+                        currdate = date_published_est
+
+            if currdate < mindate:
+                mindate = currdate
+                first = pagemap
+                print mindate # for debugging purposes
+            else: print 'no pagemap'
+
+            # for next search, reduce upper bound by binary method or earliest date
+            mid = low + (high - low)/2
+            high = mid - day if mid <= mindate else mindate - day
+
+            #for debugging purposes:
+            print mid <= mindate
+
+    print 'earliest entry: '
+
+        # TODO - Also return top hits
+    pageinfo = {
+                'quote':    quote_text, 
+                'title':    first["title"], 
+                'url':      first["link"], 
+                'source':   ' ', 
+                'date':     mindate.strftime('%c'),
+                'cached':   'n'
+                }
+
+    #create source object and put in db
+    newSource = Source(source_quote=quote_text, 
+                        source_url=first["link"], 
+                        source_title=first["title"], 
+                        source_name=' ', 
+                        source_date=mindate)
+    newSource.save()
+
+    #create request and put in db
+    newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
+    newRequest.save()
+
+    pageinfo = json.dumps(pageinfo)
+    return HttpResponse(pageinfo, content_type='application/json')
+
 
 
 # by josh
@@ -217,9 +310,6 @@ def googleFirst(text, u):
     day = timedelta(days=1) # one-day increment
     first = {}
     mindate = today # earliest date mentioned in metatags of search results
-
-    #old method:  service = build("customsearch", "v1", developerKey="AIzaSyDFUxKEogS82DTdGIMqOs8SmvtVAmsDvkY")
-    # res = service.cse().list(q = text, cx='000898682532264933795:0fmbuakszua', lowRange = '19000101', highRange =high.strftime('%Y%m%d'),).execute()
 
     # binary search
     for i in range(0, 15): # temporarily limit the number of searches for each quote
