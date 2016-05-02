@@ -193,6 +193,10 @@ def results(request, quote):
             'date':                 s.source_date.strftime('%c'),
             'other_article_urls':   s.other_article_urls,
             'other_article_titles': s.other_article_titles,
+            'other_trusted':        s.other_trusted,
+            'other_untrusted':      s.other_untrusted,
+            'trusted':              s.trusted,
+            'untrusted':            s.untrusted,
             'cached':               'true'
         }
         
@@ -341,7 +345,7 @@ def googleFirst(text, u):
 
 # by meir
 def googleTop(quote_text, metadata, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     
