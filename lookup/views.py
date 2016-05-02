@@ -260,7 +260,7 @@ def googleEarliest(quote, u):
         if low >= high: break
 
         #get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + quote_text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote_text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
@@ -298,7 +298,7 @@ def googleEarliest(quote, u):
 
         # TODO - Also return top hits
     pageinfo = {
-                'quote':    quote_text, 
+                'quote':    quote, 
                 'title':    first["title"], 
                 'url':      first["link"], 
                 'source':   ' ', 
@@ -306,17 +306,17 @@ def googleEarliest(quote, u):
                 'cached':   'n'
                 }
 
-    #create source object and put in db
-    newSource = Source(source_quote=quote_text, 
-                        source_url=first["link"], 
-                        source_title=first["title"], 
-                        source_name=' ', 
-                        source_date=mindate)
-    newSource.save()
+    # #create source object and put in db
+    # newSource = Source(source_quote=quote_text, 
+    #                     source_url=first["link"], 
+    #                     source_title=first["title"], 
+    #                     source_name=' ', 
+    #                     source_date=mindate)
+    # newSource.save()
 
-    #create request and put in db
-    newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
-    newRequest.save()
+    # #create request and put in db
+    # newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
+    # newRequest.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
