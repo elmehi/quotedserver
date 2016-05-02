@@ -226,6 +226,7 @@ def results(request, quote):
 
 
 def findDate(pagemap):
+    print pagemap
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     date_published_est = date.today()
     for type in site_types:
