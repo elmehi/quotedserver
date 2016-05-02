@@ -428,12 +428,27 @@ def googleFirst(text, u):
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
+def findDate(pagemap):
+    site_types=["newsarticle", "webpage", "blogposting", "article"]
+    for type in site_types:
+        if type in pagemap:
+            site_type_data = pagemap[type][0]
+            if "datepublished" in site_type_data:
+                # Attempt to parse the date string - break only if successful
+                date_published_est = parse_datetime(site_type_data["datepublished"])
+                if date_published_est == None:
+                    print site_type_data["datepublished"]
+                    date_published_est = date.today()
+                    continue
+                break
+    return date_published_est
+
 
 # by meir
 def googleTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
-    site_types=["newsarticle", "webpage", "blogposting", "article"]
+    # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
     NUM_KEYWORDS_TO_USE = 3
     NUM_ENTITIES_TO_USE = 2
@@ -463,18 +478,9 @@ def googleTop(quote_text, metadata, u):
             meta = pagemap["metatags"][0]
             if "og:site_name" in meta.keys(): 
                 source_name = meta["og:site_name"]
-                
-        for type in site_types:
-            if type in pagemap:
-                site_type_data = pagemap[type][0]
-                if "datepublished" in site_type_data:
-                    # Attempt to parse the date string - break only if successful
-                    date_published_est = parse_datetime(site_type_data["datepublished"])
-                    if date_published_est == None:
-                        print site_type_data["datepublished"]
-                        date_published_est = date.today()
-                        continue
-                    break
+        
+
+        date_published_est = findDate(pagemap)
 
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
