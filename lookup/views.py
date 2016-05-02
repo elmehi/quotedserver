@@ -8,7 +8,6 @@ import json
 from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
 import urllib
-import base64
 import embedly
 
 def userFromRequest(request):
@@ -225,11 +224,27 @@ def results(request, quote):
         
         return googleTop(quote_text, metadata, userFromRequest(request))
 
+
+def findDate(pagemap):
+    site_types=["newsarticle", "webpage", "blogposting", "article"]
+    for type in site_types:
+        if type in pagemap:
+            site_type_data = pagemap[type][0]
+            if "datepublished" in site_type_data:
+                # Attempt to parse the date string - break only if successful
+                date_published_est = parse_datetime(site_type_data["datepublished"])
+                if date_published_est == None:
+                    print site_type_data["datepublished"]
+                    date_published_est = date.today()
+                    continue
+                break
+    return date_published_est
+
+
+
 # this is a hybrid function still in progress
 def googleEarliest(quote_text, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-    site_types=["newsarticle", "webpage", "blogposting", "article"]
-
 
     low = date(1970, 01, 01) # lower bound for date search
     today = mindate = date.today()
@@ -239,8 +254,8 @@ def googleEarliest(quote_text, u):
     first = {}
 
     # binary search
-    for i in range(0, 10): # temporarily limit the number of searches for each quote
-        print "itter: ", i
+    for i in range(0, 8): # temporarily limit the number of searches for each quote
+        
         # end loop if range has been maximally narrowed
         if low >= high: break
 
@@ -250,7 +265,7 @@ def googleEarliest(quote_text, u):
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
         # for debugging:
-        print rescount, 'low: ' + str(low) + ' high: ' + str(high)
+        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high)
 
         # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
         if rescount < 1:
@@ -264,25 +279,13 @@ def googleEarliest(quote_text, u):
         # for multiple hits and non-maximally narrowed range, find earliest hit
         else:
             for pagemap in res["items"]:
-                for type in site_types:
-                    if type in pagemap:
-                        site_type_data = pagemap[type][0]
-                        if "datepublished" in site_type_data:
-                            # Attempt to parse the date string - break only if successful
-                            date_published_est = parse_datetime(site_type_data["datepublished"])
-                            if date_published_est == None:
-                                print site_type_data["datepublished"]
-                                date_published_est = date.today()
-                                continue
-                            break
+                currdate = findDate(pagemap)
 
-                        currdate = date_published_est
-
-            if currdate < mindate:
-                mindate = currdate
-                first = pagemap
-                print mindate # for debugging purposes
-            else: print 'no pagemap'
+                if currdate < mindate:
+                    mindate = currdate
+                    first = pagemap
+                    print mindate # for debugging purposes
+                else: print 'no pagemap'
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
@@ -428,20 +431,6 @@ def googleFirst(text, u):
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
-def findDate(pagemap):
-    site_types=["newsarticle", "webpage", "blogposting", "article"]
-    for type in site_types:
-        if type in pagemap:
-            site_type_data = pagemap[type][0]
-            if "datepublished" in site_type_data:
-                # Attempt to parse the date string - break only if successful
-                date_published_est = parse_datetime(site_type_data["datepublished"])
-                if date_published_est == None:
-                    print site_type_data["datepublished"]
-                    date_published_est = date.today()
-                    continue
-                break
-    return date_published_est
 
 
 # by meir
