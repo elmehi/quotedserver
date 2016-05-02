@@ -8,8 +8,8 @@ import json
 from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
 import urllib
-import base64
 import embedly
+import pprint.pprint as pprint
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -193,10 +193,6 @@ def results(request, quote):
             'date':                 s.source_date.strftime('%c'),
             'other_article_urls':   s.other_article_urls,
             'other_article_titles': s.other_article_titles,
-            'other_trusted':        s.other_trusted,
-            'other_untrusted':      s.other_untrusted,
-            'trusted':              s.trusted,
-            'untrusted':            s.untrusted,
             'cached':               'true'
         }
         
@@ -229,64 +225,76 @@ def results(request, quote):
         
         return googleTop(quote_text, metadata, userFromRequest(request))
 
-# this is a hybrid function still in progress
-def googleEarliest(quote_text, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+
+def findDate(pagemap):
     site_types=["newsarticle", "webpage", "blogposting", "article"]
+    date_published_est = date.today()
+    for type in site_types:
+        if type in pagemap:
+            site_type_data = pagemap[type][0]
+            if "datepublished" in site_type_data:
+                print pagemap[type][0]
+                # Attempt to parse the date string - break only if successful
+                date_published_est = parse_datetime(site_type_data["datepublished"])
+                if date_published_est == None:
+                    # print site_type_data["datepublished"]
+                    date_published_est = date.today()
+                    continue
+                break
+    print "returning date_published_est: ", date_published_est
+    return date_published_est
 
 
+
+# this is a hybrid function still in progress
+def googleEarliest(request, quote):
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+
+    day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
-    today = mindate = date.today()
+    today = date.today()
+    mindate = date.today()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
-    day = timedelta(days=1) # one-day increment
     first = {}
 
     # binary search
-    for i in range(0, 15): # temporarily limit the number of searches for each quote
-
+    for i in range(0, 8): # temporarily limit the number of searches for each quote
+        
         # end loop if range has been maximally narrowed
         if low >= high: break
 
-        #get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + quote_text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote_text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        # get JSON of results from google with appropriate max date
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
         # for debugging:
-        print rescount, 'low: ' + str(low) + ' high: ' + str(high)
+        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high)
 
         # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
-        if rescount < 1:
+        if not rescount:
+            print "no results", 
             low = high + day
             high = low + (mindate - low)/2
 
         elif rescount == 1:
+            print "one result",
             first = res["items"][0]
             break
 
         # for multiple hits and non-maximally narrowed range, find earliest hit
         else:
             for pagemap in res["items"]:
-                for type in site_types:
-                    if type in pagemap:
-                        site_type_data = pagemap[type][0]
-                        if "datepublished" in site_type_data:
-                            # Attempt to parse the date string - break only if successful
-                            date_published_est = parse_datetime(site_type_data["datepublished"])
-                            if date_published_est == None:
-                                print site_type_data["datepublished"]
-                                date_published_est = date.today()
-                                continue
-                            break
+                currdate = findDate(pagemap)
 
-                        currdate = date_published_est
-
-            if currdate < mindate:
-                mindate = currdate
-                first = pagemap
-                print mindate # for debugging purposes
-            else: print 'no pagemap'
+                if currdate < mindate:
+                    mindate = currdate
+                    first = pagemap
+                    print "mindate", mindate # for debugging purposes
+                    print "currdate", currdate
+                    pprint(first)
+            # else: print 'no pagemap'
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
@@ -299,7 +307,7 @@ def googleEarliest(quote_text, u):
 
         # TODO - Also return top hits
     pageinfo = {
-                'quote':    quote_text, 
+                'quote':    quote, 
                 'title':    first["title"], 
                 'url':      first["link"], 
                 'source':   ' ', 
@@ -307,17 +315,17 @@ def googleEarliest(quote_text, u):
                 'cached':   'n'
                 }
 
-    #create source object and put in db
-    newSource = Source(source_quote=quote_text, 
-                        source_url=first["link"], 
-                        source_title=first["title"], 
-                        source_name=' ', 
-                        source_date=mindate)
-    newSource.save()
+    # #create source object and put in db
+    # newSource = Source(source_quote=quote_text, 
+    #                     source_url=first["link"], 
+    #                     source_title=first["title"], 
+    #                     source_name=' ', 
+    #                     source_date=mindate)
+    # newSource.save()
 
-    #create request and put in db
-    newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
-    newRequest.save()
+    # #create request and put in db
+    # newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
+    # newRequest.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
@@ -433,11 +441,12 @@ def googleFirst(text, u):
     return HttpResponse(pageinfo, content_type='application/json')
 
 
+
 # by meir
 def googleTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
-    site_types=["newsarticle", "webpage", "blogposting", "article"]
+    # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
     NUM_KEYWORDS_TO_USE = 3
     NUM_ENTITIES_TO_USE = 2
@@ -467,42 +476,13 @@ def googleTop(quote_text, metadata, u):
             meta = pagemap["metatags"][0]
             if "og:site_name" in meta.keys(): 
                 source_name = meta["og:site_name"]
-                
-        for type in site_types:
-            if type in pagemap:
-                site_type_data = pagemap[type][0]
-                if "datepublished" in site_type_data:
-                    # Attempt to parse the date string - break only if successful
-                    date_published_est = parse_datetime(site_type_data["datepublished"])
-                    if date_published_est == None:
-                        print site_type_data["datepublished"]
-                        date_published_est = date.today()
-                        continue
-                    break
+        
+
+        date_published_est = findDate(pagemap)
 
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
-        
-        other_trusted = []
-        other_untrusted = []
-        for url in other_urls:
-            trusted, untrusted = False, False
-            for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
-                if trusted_source in url:
-                    trusted = True
-                if untrusted_source in url:
-                    untrusted = True
-            
-            other_trusted.append(trusted)
-            other_untrusted.append(untrusted)
-        
-        primary_trusted, primary_untrusted = False, False
-        for trusted_source, untrusted_source in zip(u.trusted_sources, u.untrusted_sources):
-            if trusted_source in url:
-                primary_trusted = True
-            if untrusted_source in url:
-                primary_untrusted = True
         
         pageinfo = {
                     'quote':                quote_text, 
@@ -512,24 +492,16 @@ def googleTop(quote_text, metadata, u):
                     'date':                 date_published_est.strftime('%c'),
                     'other_article_urls':   other_urls,
                     'other_article_titles': other_titles,
-                    'other_trusted':        other_trusted,
-                    'other_untrusted':      other_untrusted,
                     'cached':               'false',
-                    'trusted':              primary_trusted,
-                    'untrusted':            primary_untrusted
                     }
         
         newSource = Source(source_quote=            pageinfo['quote'], 
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            date_published_est.date(),
+                            source_date=            date_published_est,
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles'],
-                            other_trusted=          pageinfo['other_trusted'],
-                            other_untrusted=        pageinfo['other_untrusted'],
-                            trusted=                pageinfo['trusted'],
-                            untrusted=              pageinfo['untrusted']
                             )
         newSource.save()
         newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
