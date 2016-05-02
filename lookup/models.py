@@ -39,7 +39,13 @@ class Request(models.Model):
     request_date = models.DateTimeField(default=django.utils.timezone.now)
     request_source = models.ForeignKey(Source, on_delete=models.DO_NOTHING)
 
+    def __str__(self):
+        return self.request_source.source_quote
+
 class Metadata(models.Model):
     url = models.TextField()
     keywords = fields.ArrayField(models.TextField(), blank=True, default=list)
     entities = fields.ArrayField(models.TextField(), blank=True, default=list)
+
+    def __str__(self):
+        return self.url
