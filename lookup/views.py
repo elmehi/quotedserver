@@ -201,7 +201,7 @@ def results(request, quote):
     #if not cached initiate API request
     else:
         print request.META
-        b64URL = request.META['RequestOriginURL']
+        b64URL = request.META['HTTP_REQUESTORIGINURL']
         print b64URL
         URL = b64URL.decode('base64')
         print URL
