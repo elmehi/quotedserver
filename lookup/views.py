@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
 import urllib
 import embedly
+import pprint.pprint as pprint
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -240,7 +241,7 @@ def findDate(pagemap):
                     date_published_est = date.today()
                     continue
                 break
-    print date_published_est
+    print "returning date_published_est: ", date_published_est
     return date_published_est
 
 
@@ -249,12 +250,12 @@ def findDate(pagemap):
 def googleEarliest(request, quote):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
+    day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
     today = date.today()
     mindate = date.today()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
-    day = timedelta(days=1) # one-day increment
     first = {}
 
     # binary search
@@ -263,7 +264,7 @@ def googleEarliest(request, quote):
         # end loop if range has been maximally narrowed
         if low >= high: break
 
-        #get JSON of results from google with appropriate max date
+        # get JSON of results from google with appropriate max date
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
@@ -272,12 +273,13 @@ def googleEarliest(request, quote):
         print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high)
 
         # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
-        if rescount < 1:
+        if not rescount:
+            print "no results", 
             low = high + day
             high = low + (mindate - low)/2
 
         elif rescount == 1:
-            print "one result"
+            print "one result",
             first = res["items"][0]
             break
 
@@ -289,8 +291,10 @@ def googleEarliest(request, quote):
                 if currdate < mindate:
                     mindate = currdate
                     first = pagemap
-                    print mindate # for debugging purposes
-                else: print 'no pagemap'
+                    print "mindate", mindate # for debugging purposes
+                    print "currdate", currdate
+                    pprint(first)
+            # else: print 'no pagemap'
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
