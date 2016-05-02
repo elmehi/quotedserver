@@ -210,7 +210,7 @@ def results(request, quote):
         if Metadata.objects.filter(url = URL).exists():
             metadata = Metadata.objects.get(url = URL)
         else:
-            client = Embedly('6b216564e304429090c3f15fccde1b3e')
+            client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
             print client
             embedly_response = client.extract(URL)
             
