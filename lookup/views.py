@@ -9,7 +9,6 @@ from datetime import date, timedelta
 from django.utils.dateparse import parse_datetime
 import urllib
 import embedly
-import pprint.pprint as pprint
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -293,7 +292,6 @@ def googleEarliest(request, quote):
                     first = pagemap
                     print "mindate", mindate # for debugging purposes
                     print "currdate", currdate
-                    pprint(first)
             # else: print 'no pagemap'
 
             # for next search, reduce upper bound by binary method or earliest date
