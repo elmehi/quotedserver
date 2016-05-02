@@ -15,6 +15,8 @@ class Source(models.Model):
     other_article_titles = fields.ArrayField(models.TextField(), blank=True, default=list)
     other_trusted = fields.ArrayField(models.TextField(), blank=True, default=list)
     other_untrusted = fields.ArrayField(models.TextField(), blank=True, default=list)
+    trusted = models.BooleanField(default=False)
+    untrusted = models.BooleanField(default=False)
     
     def __str__(self):
         return self.source_quote
