@@ -348,8 +348,7 @@ def googleTop(quote_text, metadata, u):
     NUM_KEYWORDS_TO_USE = 3
     NUM_ENTITIES_TO_USE = 2
     
-    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + 
-                        ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
+    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
         res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
