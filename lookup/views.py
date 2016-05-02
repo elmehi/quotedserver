@@ -10,6 +10,7 @@ from django.utils.dateparse import parse_datetime
 import dateutil.parser
 import urllib
 import base64
+import embedly
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -204,6 +205,30 @@ def results(request, quote):
     #if not cached initiate API request
     else:
         # print "not from db"
+        b64URL = request.META['RequestOriginURL']
+        print b64URL
+        URL = b64URL.decode('base64')
+        print URL
+        
+        metadata = None
+        if Metadata.objects.filter(url = URL).exists():
+            metadata = Metadata.objects.get(url = URL)
+        else:
+            client = Embedly('6b216564e304429090c3f15fccde1b3e')
+            print client
+            embedly_response = client.extract(URL)
+            
+            print embedly_response
+            
+            keyword_list = [k['name'] for k in embedly_response['keywords']]
+            entity_list = [e['name'] for e in embedly_response['entities']]
+            
+            print keyword_list
+            print entity_list
+            
+            metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
+            metadata.save()
+        
         return googleTop(quote_text, userFromRequest(request))
 
 
