@@ -297,8 +297,6 @@ def googleEarliest_hybrid(quote):
             high = mid - day if mid <= mindate else mindate - day
 
     # DEFAULT SHOULD BE EMPTY STRING
-    print "FIRST:"
-    print first
     source_name = ' '
     if "pagemap" in first:
         if first["pagemap"]["metatags"][0]:
@@ -353,7 +351,7 @@ def googleEarliestWithTop(quote_text, metadata, u):
 
     pageinfo = {
                 'quote':                quote_text, 
-                'url':                  earliest["link"], 
+                'url':                  earliest["url"], 
                 'title':                earliest["title"], 
                 'name':                 earliest["name"], 
                 'date':                 earliest["date"],
