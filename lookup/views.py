@@ -247,7 +247,7 @@ def findDate(pagemap):
             if "datecreated" in typeData: articleDate = typeData["datecreated"]
             elif "datepublished" in typeData: articleDate = typeData["datepublished"]
             print "articleDate:", articleDate
-    if articleDate: return parse(articleDate)
+    if articleDate: return parse_datetime(articleDate)
     else: return datetime.now()
 
 # temp binary search
