@@ -224,7 +224,7 @@ def results(request, quote):
             
             print metadata
         
-        return googleTop(quote_text, metadata, userFromRequest(request))
+        return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
     # print "===========PAGEMAP=============="
@@ -297,6 +297,8 @@ def googleEarliest_hybrid(quote):
             high = mid - day if mid <= mindate else mindate - day
 
     # DEFAULT SHOULD BE EMPTY STRING
+    print "FIRST:"
+    print first
     source_name = ' '
     if "pagemap" in first:
         if first["pagemap"]["metatags"][0]:
@@ -318,7 +320,7 @@ def googleEarliest_hybrid(quote):
 
     return pageinfo
 
-def googleTop_hybrid(quote_text, metadata, u):
+def googleEarliestWithTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     
