@@ -260,7 +260,7 @@ def googleEarliest_hybrid(quote):
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
     # binary search
-    for i in range(0, 8): # temporarily limit the number of searches for each quote
+    for i in range(0, 12): # temporarily limit the number of searches for each quote
         
         # end loop if range has been maximally narrowed
         if low >= high: break
@@ -296,11 +296,16 @@ def googleEarliest_hybrid(quote):
             mid = low + (high - low)/2
             high = mid - day if mid <= mindate else mindate - day
 
-    source_name = 'default'
-    if first["pagemap"]["metatags"][0]:
-        meta = first["pagemap"]["metatags"][0]
-        if "og:site_name" in meta.keys(): 
-            source_name = meta["og:site_name"]   
+    # DEFAULT SHOULD BE EMPTY STRING
+    source_name = ' '
+    if "pagemap" in first:
+        if first["pagemap"]["metatags"][0]:
+            meta = first["pagemap"]["metatags"][0]
+            if "og:site_name" in meta.keys(): 
+                source_name = meta["og:site_name"]   
+    else:
+        first["title"] = " "
+        first["link"] = " "
 
     pageinfo = {
                 'quote':    quote, 
