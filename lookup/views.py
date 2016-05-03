@@ -359,7 +359,7 @@ def googleTop_hybrid(quote_text, metadata, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            pageinfo['date']
+                            source_date=            pageinfo['date'],
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles'],
                             )
