@@ -325,8 +325,8 @@ def googleTop(quote_text, metadata, u):
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
-    NUM_KEYWORDS_TO_USE = 3
-    NUM_ENTITIES_TO_USE = 2
+    NUM_KEYWORDS_TO_USE = 0
+    NUM_ENTITIES_TO_USE = 0
     
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
@@ -502,4 +502,3 @@ def googleFirst(text, u):
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
-
