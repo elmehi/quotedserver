@@ -224,7 +224,7 @@ def results(request, quote):
             
             print metadata
         
-        return googleTop(quote_text, metadata, userFromRequest(request))
+        return googleTop_hybrid(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
     # print "===========PAGEMAP=============="
