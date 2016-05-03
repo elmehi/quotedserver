@@ -331,7 +331,14 @@ def googleTop(quote_text, metadata, u):
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text)
+        print "REQ"
+        print req
+        res = req.execute()
+        
+        print "RES"
+        print res
+        
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
