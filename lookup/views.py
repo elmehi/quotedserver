@@ -10,7 +10,6 @@ from django.utils.dateparse import parse_datetime
 import urllib
 import embedly
 import pprint
-# import datetime
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -226,7 +225,6 @@ def results(request, quote):
         
         return googleTop(quote_text, metadata, userFromRequest(request))
 
-
 def findDate(pagemap):
     print "===========PAGEMAP=============="
     pprint.pprint(pagemap)
@@ -236,7 +234,6 @@ def findDate(pagemap):
     articleDate = None
 
     if "metatags" in pagemap:
-        print "there are metatags"
         metatag = pagemap["metatags"][0]
         if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
         elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
@@ -258,10 +255,9 @@ def findDate(pagemap):
 
     return date_published_est
 
-
 # this is a hybrid function still in progress
 def googleEarliest(request, quote):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+    # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
@@ -303,12 +299,6 @@ def googleEarliest(request, quote):
                 if currdate < mindate:
                     mindate = currdate
                     first = pagemap
-                    # print "mindate", mindate # for debugging purposes
-                    # print "currdate", currdate
-                    # print "\n\n\n\n"
-                    # pprint.pprint(first)
-                    # print "\n\n\n\n"
-            
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
@@ -323,17 +313,6 @@ def googleEarliest(request, quote):
                 'cached':   'n'
                 }
 
-    # #create source object and put in db
-    # newSource = Source(source_quote=quote_text, 
-    #                     source_url=first["link"], 
-    #                     source_title=first["title"], 
-    #                     source_name=' ', 
-    #                     source_date=mindate)
-    # newSource.save()
-
-    # #create request and put in db
-    # newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
-    # newRequest.save()
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
@@ -341,7 +320,6 @@ def googleEarliest(request, quote):
 def googleTop_2():
     return
 
-# by meir
 def googleTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
@@ -417,7 +395,7 @@ def googleTop(quote_text, metadata, u):
         print e
         return HttpResponse(str(e))
 
-# by josh
+# depracted
 def googleFirst(text, u):
     #metatags related to dates:
     datekeys = {'article:published_time','Pubdate', 'ptime', 'utime', 'displaydate', 'dat', 'date', 'datetime', 'datePublished', 'datepublished', 'dc.date', 'og:pubdate', 'pubdate', 'datecreated', 'pud', 'pdate'}
