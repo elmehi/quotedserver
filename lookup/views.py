@@ -251,17 +251,14 @@ def findDate(pagemap):
     else: return datetime.now()
 
 # temp binary search
-def googleEarliest(request, quote):
-    # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-
+def googleEarliest_hybrid(quote):
+    first = {}
     day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
     today = date.today()
     mindate = date.today()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
-    first = {}
-
     # binary search
     for i in range(0, 8): # temporarily limit the number of searches for each quote
         
@@ -309,14 +306,12 @@ def googleEarliest(request, quote):
                 'quote':    quote, 
                 'title':    first["title"], 
                 'url':      first["link"], 
-                'name':   source_name, 
+                'name':     source_name, 
                 'date':     mindate.strftime('%c'),
                 'cached':   'n'
                 }
 
-
-    pageinfo = json.dumps(pageinfo)
-    return HttpResponse(pageinfo, content_type='application/json')
+    return pageinfo
 
 def googleTop_hybrid(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
@@ -340,43 +335,21 @@ def googleTop_hybrid(quote_text, metadata, u):
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
                 res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
                        
-        # first = res["items"][0]
-        # pagemap = first['pagemap']
-        # date_published_est = date.today()
-        # source_name = ' '
-        
-        # if pagemap["metatags"][0]:
-        #     meta = pagemap["metatags"][0]
-        #     if "og:site_name" in meta.keys(): 
-        #         source_name = meta["og:site_name"]       
-
-        # date_published_est = findDate(pagemap)
 
         # This creates an array of tuples containing (article_title, url) for each source
         other_urls = [item['link'] for item in res['items'][0:max(1, len(res['items']))]]
         other_titles = [item['title'] for item in res['items'][0:max(1, len(res['items']))]]
         
 
-
-
-
-
-
-
-
-
-
-
-
-
+        earliest = googleEarliest_hybrid(quote_text)
 
 
         pageinfo = {
                     'quote':                quote_text, 
-                    'url':                  first["link"], 
-                    'title':                first["title"], 
-                    'name':                 source_name, 
-                    'date':                 date_published_est.strftime('%c'),
+                    'url':                  earliest["link"], 
+                    'title':                earliest["title"], 
+                    'name':                 earliest["name"], 
+                    'date':                 earliest["date"],
                     'other_article_urls':   other_urls,
                     'other_article_titles': other_titles,
                     'cached':               'false',
@@ -386,7 +359,7 @@ def googleTop_hybrid(quote_text, metadata, u):
                             source_url=             pageinfo['url'], 
                             source_title=           pageinfo["title"], 
                             source_name=            pageinfo['name'], 
-                            source_date=            date_published_est,
+                            source_date=            pageinfo['date']
                             other_article_urls=     pageinfo['other_article_urls'],
                             other_article_titles=   pageinfo['other_article_titles'],
                             )
@@ -394,9 +367,9 @@ def googleTop_hybrid(quote_text, metadata, u):
         newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
         newRequest.save()
 
-        pageinfo_text = json.dumps(pageinfo)
-        
+        pageinfo_text = json.dumps(pageinfo)       
         return HttpResponse(pageinfo_text, content_type='application/json')
+
     except Exception as e:
         # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
         print str(e)
@@ -592,6 +565,74 @@ def googleFirst(text, u):
     #create request and put in db
     newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
     newRequest.save()
+
+    pageinfo = json.dumps(pageinfo)
+    return HttpResponse(pageinfo, content_type='application/json')
+
+# temp binary search
+def googleEarliest(request, quote):
+    # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+
+    day = timedelta(days=1) # one-day increment
+    low = date(1970, 01, 01) # lower bound for date search
+    today = date.today()
+    mindate = date.today()
+    high = low + (today - low)/2 # begin with midpoint between lower bound and today
+    
+    first = {}
+
+    # binary search
+    for i in range(0, 8): # temporarily limit the number of searches for each quote
+        
+        # end loop if range has been maximally narrowed
+        if low >= high: break
+
+        # get JSON of results from google with appropriate max date
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        res = json.loads((urllib.urlopen(url)).read())
+        rescount = int(res["searchInformation"]["totalResults"]) #number of results
+        
+        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
+
+        if not rescount:
+            print "no results", 
+            low = high + day
+            high = low + (mindate - low)/2
+
+        elif rescount == 1:
+            print "one result",
+            first = res["items"][0]
+            break
+
+        # for multiple hits and non-maximally narrowed range, find earliest hit
+        else:
+            for i, pagemap in enumerate(res["items"]):
+                currdate = findDate(pagemap["pagemap"]).date()
+                print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
+
+                if currdate < mindate:
+                    mindate = currdate
+                    first = pagemap
+
+            # for next search, reduce upper bound by binary method or earliest date
+            mid = low + (high - low)/2
+            high = mid - day if mid <= mindate else mindate - day
+
+    source_name = 'default'
+    if first["pagemap"]["metatags"][0]:
+        meta = first["pagemap"]["metatags"][0]
+        if "og:site_name" in meta.keys(): 
+            source_name = meta["og:site_name"]   
+
+    pageinfo = {
+                'quote':    quote, 
+                'title':    first["title"], 
+                'url':      first["link"], 
+                'name':   source_name, 
+                'date':     mindate.strftime('%c'),
+                'cached':   'n'
+                }
+
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
