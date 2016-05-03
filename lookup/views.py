@@ -331,16 +331,10 @@ def googleTop(quote, metadata, u):
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        # req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote)
-        # print "REQ"
-        # pprint.pprint(req)
-        # res = req.execute()
-        url = urllib.quote_plus("https://www.googleapis.com/customsearch/v1?q=" + metadata_query + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-        res = json.loads((urllib.urlopen(url)).read())
-        print "URL"
-        print url
-        print "RES"
-        print res
+        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote)
+        print "REQ"
+        pprint.pprint(req)
+        res = req.execute()
         
         print "RES"
         pprint.pprint(res)
