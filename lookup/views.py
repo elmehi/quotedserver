@@ -386,13 +386,13 @@ def googleTop(quote, metadata, u):
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
-    NUM_KEYWORDS_TO_USE = 2
-    NUM_ENTITIES_TO_USE = 1
+    NUM_KEYWORDS_TO_USE = 0
+    NUM_ENTITIES_TO_USE = 0
     
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote)
+        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote, relatedSite=True)
         print "REQ"
         pprint.pprint(req)
         res = req.execute()
@@ -404,12 +404,12 @@ def googleTop(quote, metadata, u):
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            res = service.cse().list(q = quote + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm', relatedSite=True).execute()
             tot = res['queries']['request'][0]['totalResults']
             
             if int(tot) == 0:
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
-                res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm').execute()
+                res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm', relatedSite=True).execute()
                 
         
         first = res["items"][0]
