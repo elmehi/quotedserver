@@ -406,28 +406,35 @@ def googleTop_hybrid(quote_text, metadata, u):
         return HttpResponse(str(e))
     return
 
-def googleTop(quote_text, metadata, u):
+def googleTop(quote, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
-    NUM_KEYWORDS_TO_USE = 3
-    NUM_ENTITIES_TO_USE = 2
+    NUM_KEYWORDS_TO_USE = 2
+    NUM_ENTITIES_TO_USE = 1
     
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote)
+        print "REQ"
+        pprint.pprint(req)
+        res = req.execute()
+        
+        print "RES"
+        pprint.pprint(res)
+        
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            res = service.cse().list(q = quote + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
             tot = res['queries']['request'][0]['totalResults']
             
             if int(tot) == 0:
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
-                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm').execute()
                 
         
         first = res["items"][0]
@@ -448,7 +455,7 @@ def googleTop(quote_text, metadata, u):
         other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
         
         pageinfo = {
-                    'quote':                quote_text, 
+                    'quote':                quote, 
                     'url':                  first["link"], 
                     'title':                first["title"], 
                     'name':                 source_name, 
@@ -588,4 +595,3 @@ def googleFirst(text, u):
 
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
-
