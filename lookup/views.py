@@ -5,11 +5,12 @@ from django.http import HttpResponse
 from googleapiclient.discovery import build
 from .models import Source, Request, User, Metadata
 import json
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from django.utils.dateparse import parse_datetime
 import urllib
 import embedly
-import pprint.pprint as pprint
+import pprint
+# import datetime
 
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
@@ -227,23 +228,35 @@ def results(request, quote):
 
 
 def findDate(pagemap):
+    print "===========PAGEMAP=============="
+    pprint.pprint(pagemap)
+    print "==============="
     site_types=["newsarticle", "webpage", "blogposting", "article"]
-    date_published_est = date.today()
-    for type in site_types:
-        if type in pagemap:
-            site_type_data = pagemap[type][0]
-            if "datepublished" in site_type_data:
-                print pagemap[type][0]
-                # Attempt to parse the date string - break only if successful
-                date_published_est = parse_datetime(site_type_data["datepublished"])
-                if date_published_est == None:
-                    # print site_type_data["datepublished"]
-                    date_published_est = date.today()
-                    continue
-                break
-    print "returning date_published_est: ", date_published_est
-    return date_published_est
+    date_published_est = datetime.now()
+    articleDate = None
 
+    if "metatags" in pagemap:
+        print "there are metatags"
+        metatag = pagemap["metatags"][0]
+        if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
+        elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
+           
+        if articleDate:
+            date_published_est = datetime.strptime(articleDate, "%Y/%m/%d")
+            return date_published_est
+
+    for type in site_types:
+        if type in pagemap.keys():
+            typeData = pagemap[type][0]
+            if "datecreated" in typeData: articleDate = typeData["datecreated"]
+            elif "datepublished" in typeData: articleDate = typeData["datepublished"]
+            
+            # Attempt to parse the date string - break only if successful
+            if articleDate and parse_datetime(articleDate):
+                date_published_est = parse_datetime(articleDate)
+            break
+
+    return date_published_est
 
 
 # this is a hybrid function still in progress
@@ -268,11 +281,9 @@ def googleEarliest(request, quote):
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
+        
+        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
 
-        # for debugging:
-        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high)
-
-        # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
         if not rescount:
             print "no results", 
             low = high + day
@@ -285,33 +296,30 @@ def googleEarliest(request, quote):
 
         # for multiple hits and non-maximally narrowed range, find earliest hit
         else:
-            for pagemap in res["items"]:
-                currdate = findDate(pagemap)
+            for i, pagemap in enumerate(res["items"]):
+                currdate = findDate(pagemap["pagemap"]).date()
+                print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
 
                 if currdate < mindate:
                     mindate = currdate
                     first = pagemap
-                    print "mindate", mindate # for debugging purposes
-                    print "currdate", currdate
-                    pprint(first)
-            # else: print 'no pagemap'
+                    # print "mindate", mindate # for debugging purposes
+                    # print "currdate", currdate
+                    # print "\n\n\n\n"
+                    # pprint.pprint(first)
+                    # print "\n\n\n\n"
+            
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
             high = mid - day if mid <= mindate else mindate - day
-
-            #for debugging purposes:
-            print mid <= mindate
-
-    print 'earliest entry: '
-
-        # TODO - Also return top hits
+  
     pageinfo = {
                 'quote':    quote, 
                 'title':    first["title"], 
                 'url':      first["link"], 
                 'source':   ' ', 
-                'date':     mindate.strftime('%c'),
+                'date':     low.strftime('%c'),
                 'cached':   'n'
                 }
 
@@ -330,7 +338,84 @@ def googleEarliest(request, quote):
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
+def googleTop_2():
+    return
 
+# by meir
+def googleTop(quote_text, metadata, u):
+    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
+
+    # site_types=["newsarticle", "webpage", "blogposting", "article"]
+    
+    NUM_KEYWORDS_TO_USE = 3
+    NUM_ENTITIES_TO_USE = 2
+    
+    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
+
+    try:
+        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        tot = res['queries']['request'][0]['totalResults']
+        
+        if int(tot) == 0:
+            print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
+            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            tot = res['queries']['request'][0]['totalResults']
+            
+            if int(tot) == 0:
+                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
+                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                
+        
+        first = res["items"][0]
+        pagemap = first['pagemap']
+        date_published_est = date.today()
+        source_name = ' '
+        
+        if pagemap["metatags"][0]:
+            meta = pagemap["metatags"][0]
+            if "og:site_name" in meta.keys(): 
+                source_name = meta["og:site_name"]
+        
+
+        date_published_est = findDate(pagemap)
+
+        # This creates an array of tuples containing (article_title, url) for each source
+        other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
+        other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
+        
+        pageinfo = {
+                    'quote':                quote_text, 
+                    'url':                  first["link"], 
+                    'title':                first["title"], 
+                    'name':                 source_name, 
+                    'date':                 date_published_est.strftime('%c'),
+                    'other_article_urls':   other_urls,
+                    'other_article_titles': other_titles,
+                    'cached':               'false',
+                    }
+        
+        newSource = Source(source_quote=            pageinfo['quote'], 
+                            source_url=             pageinfo['url'], 
+                            source_title=           pageinfo["title"], 
+                            source_name=            pageinfo['name'], 
+                            source_date=            date_published_est,
+                            other_article_urls=     pageinfo['other_article_urls'],
+                            other_article_titles=   pageinfo['other_article_titles'],
+                            )
+        newSource.save()
+        newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
+        newRequest.save()
+
+        pageinfo_text = json.dumps(pageinfo)
+        
+        return HttpResponse(pageinfo_text, content_type='application/json')
+    except Exception as e:
+        # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
+        print str(e)
+        
+        print "FAIL"
+        print e
+        return HttpResponse(str(e))
 
 # by josh
 def googleFirst(text, u):
@@ -440,80 +525,3 @@ def googleFirst(text, u):
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
-
-
-# by meir
-def googleTop(quote_text, metadata, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
-
-    # site_types=["newsarticle", "webpage", "blogposting", "article"]
-    
-    NUM_KEYWORDS_TO_USE = 3
-    NUM_ENTITIES_TO_USE = 2
-    
-    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
-
-    try:
-        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
-        tot = res['queries']['request'][0]['totalResults']
-        
-        if int(tot) == 0:
-            print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
-            tot = res['queries']['request'][0]['totalResults']
-            
-            if int(tot) == 0:
-                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
-                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
-                
-        
-        first = res["items"][0]
-        pagemap = first['pagemap']
-        date_published_est = date.today()
-        source_name = ' '
-        
-        if pagemap["metatags"][0]:
-            meta = pagemap["metatags"][0]
-            if "og:site_name" in meta.keys(): 
-                source_name = meta["og:site_name"]
-        
-
-        date_published_est = findDate(pagemap)
-
-        # This creates an array of tuples containing (article_title, url) for each source
-        other_urls = [item['link'] for item in res['items'][1:max(1, len(res['items']))]]
-        other_titles = [item['title'] for item in res['items'][1:max(1, len(res['items']))]]
-        
-        pageinfo = {
-                    'quote':                quote_text, 
-                    'url':                  first["link"], 
-                    'title':                first["title"], 
-                    'name':                 source_name, 
-                    'date':                 date_published_est.strftime('%c'),
-                    'other_article_urls':   other_urls,
-                    'other_article_titles': other_titles,
-                    'cached':               'false',
-                    }
-        
-        newSource = Source(source_quote=            pageinfo['quote'], 
-                            source_url=             pageinfo['url'], 
-                            source_title=           pageinfo["title"], 
-                            source_name=            pageinfo['name'], 
-                            source_date=            date_published_est,
-                            other_article_urls=     pageinfo['other_article_urls'],
-                            other_article_titles=   pageinfo['other_article_titles'],
-                            )
-        newSource.save()
-        newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
-        newRequest.save()
-
-        pageinfo_text = json.dumps(pageinfo)
-        
-        return HttpResponse(pageinfo_text, content_type='application/json')
-    except Exception as e:
-        # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
-        print str(e)
-        
-        print "FAIL"
-        print e
-        return HttpResponse(str(e))
