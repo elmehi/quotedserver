@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from .models import Source, Request, User, Metadata
 import json
 from datetime import date, timedelta, datetime
+from dateutil.parser import parse
 from django.utils.dateparse import parse_datetime
 import urllib
 import embedly
@@ -226,36 +227,30 @@ def results(request, quote):
         return googleTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
-    print "===========PAGEMAP=============="
-    pprint.pprint(pagemap)
-    print "==============="
+    # print "===========PAGEMAP=============="
+    # pprint.pprint(pagemap)
+    # print "==============="
     site_types=["newsarticle", "webpage", "blogposting", "article"]
-    date_published_est = datetime.now()
     articleDate = None
 
     if "metatags" in pagemap:
         metatag = pagemap["metatags"][0]
         if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
         elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
-           
-        if articleDate:
-            date_published_est = datetime.strptime(articleDate, "%Y/%m/%d")
-            return date_published_est
 
     for type in site_types:
         if type in pagemap.keys():
             typeData = pagemap[type][0]
+            print "===========TYPEDATA=============="
+            pprint.pprint(typeData)
+            print "==============="
             if "datecreated" in typeData: articleDate = typeData["datecreated"]
             elif "datepublished" in typeData: articleDate = typeData["datepublished"]
-            
-            # Attempt to parse the date string - break only if successful
-            if articleDate and parse_datetime(articleDate):
-                date_published_est = parse_datetime(articleDate)
-            break
+            print "articleDate:", articleDate
+    if articleDate: return parse(articleDate)
+    else: return datetime.now()
 
-    return date_published_est
-
-# this is a hybrid function still in progress
+# temp binary search
 def googleEarliest(request, quote):
     # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
@@ -303,13 +298,19 @@ def googleEarliest(request, quote):
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
             high = mid - day if mid <= mindate else mindate - day
-  
+
+    source_name = 'default'
+    if first["pagemap"]["metatags"][0]:
+        meta = first["pagemap"]["metatags"][0]
+        if "og:site_name" in meta.keys(): 
+            source_name = meta["og:site_name"]   
+
     pageinfo = {
                 'quote':    quote, 
                 'title':    first["title"], 
                 'url':      first["link"], 
-                'source':   ' ', 
-                'date':     low.strftime('%c'),
+                'name':   source_name, 
+                'date':     mindate.strftime('%c'),
                 'cached':   'n'
                 }
 
@@ -317,7 +318,92 @@ def googleEarliest(request, quote):
     pageinfo = json.dumps(pageinfo)
     return HttpResponse(pageinfo, content_type='application/json')
 
-def googleTop_2():
+def googleTop_hybrid(quote_text, metadata, u):
+    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
+
+    
+    NUM_KEYWORDS_TO_USE = 3
+    NUM_ENTITIES_TO_USE = 2
+    
+    metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
+
+    try:
+        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        tot = res['queries']['request'][0]['totalResults']
+        
+        if int(tot) == 0:
+            print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
+            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
+            tot = res['queries']['request'][0]['totalResults']
+            
+            if int(tot) == 0:
+                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
+                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                       
+        # first = res["items"][0]
+        # pagemap = first['pagemap']
+        # date_published_est = date.today()
+        # source_name = ' '
+        
+        # if pagemap["metatags"][0]:
+        #     meta = pagemap["metatags"][0]
+        #     if "og:site_name" in meta.keys(): 
+        #         source_name = meta["og:site_name"]       
+
+        # date_published_est = findDate(pagemap)
+
+        # This creates an array of tuples containing (article_title, url) for each source
+        other_urls = [item['link'] for item in res['items'][0:max(1, len(res['items']))]]
+        other_titles = [item['title'] for item in res['items'][0:max(1, len(res['items']))]]
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        pageinfo = {
+                    'quote':                quote_text, 
+                    'url':                  first["link"], 
+                    'title':                first["title"], 
+                    'name':                 source_name, 
+                    'date':                 date_published_est.strftime('%c'),
+                    'other_article_urls':   other_urls,
+                    'other_article_titles': other_titles,
+                    'cached':               'false',
+                    }
+        
+        newSource = Source(source_quote=            pageinfo['quote'], 
+                            source_url=             pageinfo['url'], 
+                            source_title=           pageinfo["title"], 
+                            source_name=            pageinfo['name'], 
+                            source_date=            date_published_est,
+                            other_article_urls=     pageinfo['other_article_urls'],
+                            other_article_titles=   pageinfo['other_article_titles'],
+                            )
+        newSource.save()
+        newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
+        newRequest.save()
+
+        pageinfo_text = json.dumps(pageinfo)
+        
+        return HttpResponse(pageinfo_text, content_type='application/json')
+    except Exception as e:
+        # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
+        print str(e)
+        
+        print "FAIL"
+        print e
+        return HttpResponse(str(e))
     return
 
 def googleTop(quote_text, metadata, u):
@@ -395,7 +481,7 @@ def googleTop(quote_text, metadata, u):
         print e
         return HttpResponse(str(e))
 
-# depracted
+# deprecated
 def googleFirst(text, u):
     #metatags related to dates:
     datekeys = {'article:published_time','Pubdate', 'ptime', 'utime', 'displaydate', 'dat', 'date', 'datetime', 'datePublished', 'datepublished', 'dc.date', 'og:pubdate', 'pubdate', 'datecreated', 'pud', 'pdate'}
