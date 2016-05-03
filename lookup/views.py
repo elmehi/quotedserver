@@ -224,7 +224,7 @@ def results(request, quote):
             
             print metadata
         
-        return googleTop(quote_text, metadata, userFromRequest(request), URL)
+        return googleTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
     # print "===========PAGEMAP=============="
@@ -379,7 +379,7 @@ def googleTop_hybrid(quote_text, metadata, u):
         return HttpResponse(str(e))
     return
 
-def googleTop(quote, metadata, u, URL):
+def googleTop(quote, metadata, u):
     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
@@ -390,18 +390,18 @@ def googleTop(quote, metadata, u, URL):
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote, relatedSite=URL)
+        req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote)
         res = req.execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm', relatedSite=URL).execute()
+            res = service.cse().list(q = quote + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
             tot = res['queries']['request'][0]['totalResults']
             
             if int(tot) == 0:
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
-                res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm', relatedSite=URL).execute()
+                res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm').execute()
                 
         
         first = res["items"][0]
