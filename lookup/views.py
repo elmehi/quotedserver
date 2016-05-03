@@ -213,8 +213,6 @@ def results(request, quote):
             client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
             embedly_response = client.extract(URL)
             
-            print embedly_response['content']
-            
             keyword_list = [k['name'] for k in embedly_response['keywords']]
             entity_list = [e['name'] for e in embedly_response['entities']]
             
@@ -393,7 +391,7 @@ def googleTop(quote, metadata, u, URL):
 
     try:
         req = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote, relatedSite=URL)
-        
+        res = req.execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
