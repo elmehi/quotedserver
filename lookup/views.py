@@ -213,6 +213,8 @@ def results(request, quote):
             client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
             embedly_response = client.extract(URL)
             
+            print embedly_response['content']
+            
             keyword_list = [k['name'] for k in embedly_response['keywords']]
             entity_list = [e['name'] for e in embedly_response['entities']]
             
