@@ -314,7 +314,7 @@ def googleEarliest_hybrid(quote):
     return pageinfo
 
 def googleTop_hybrid(quote_text, metadata, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     
     NUM_KEYWORDS_TO_USE = 3
@@ -380,7 +380,7 @@ def googleTop_hybrid(quote_text, metadata, u):
     return
 
 def googleTop(quote, metadata, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU")
+    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
