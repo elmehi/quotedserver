@@ -231,9 +231,9 @@ def results(request, quote):
     return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
-    print "===========PAGEMAP=============="
-    pprint.pprint(pagemap)
-    print "==============="
+    # print "===========PAGEMAP=============="
+    # pprint.pprint(pagemap)
+    # print "==============="
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     articleDate = None
 
@@ -271,27 +271,27 @@ def page_info_for_earliest(quote):
 
         # get JSON of results from google with appropriate max date
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
-        print "search"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
-        
+    
+        print "===========RES=============="
+        pprint.pprint(res)
+        print "==============="
+
+
         print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
 
         if not rescount:
-            print "no results", 
             low = high + day
             high = low + (mindate - low)/2
 
         elif rescount == 1:
-            print "one result",
             first = res["items"][0]
             break
 
         # for multiple hits and non-maximally narrowed range, find earliest hit
         else:
             for i, pagemap in enumerate(res["items"]):
-                print "NO PAGEMAP"
-                print pagemap
                 if "pagemap" in pagemap:
                     currdate = findDate(pagemap["pagemap"])
                     print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
