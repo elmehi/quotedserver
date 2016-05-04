@@ -338,18 +338,18 @@ def googleEarliestWithTop(quote_text, metadata, u):
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     try:
-        # print "search"
+        print "search"
         res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
-            # print "search"
+            print "search"
             print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
             res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
             tot = res['queries']['request'][0]['totalResults']
             
             if int(tot) == 0:
-                # print "search"
+                print "search"
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
                 res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
                        
