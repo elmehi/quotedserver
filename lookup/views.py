@@ -8,6 +8,7 @@ import json
 from datetime import date, timedelta, datetime
 from dateutil.parser import parse
 from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 import urllib
 import embedly
 import pprint
@@ -251,7 +252,7 @@ def findDate(pagemap):
     else: return datetime.now()
 
 # temp binary search
-def googleEarliest_hybrid(quote):
+def page_info_for_earliest(quote):
     first = {}
     day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
@@ -288,7 +289,7 @@ def googleEarliest_hybrid(quote):
                 print "NO PAGEMAP"
                 print pagemap
                 if "pagemap" in pagemap:
-                    currdate = findDate(pagemap["pagemap"]).date()
+                    currdate = findDate(pagemap["pagemap"])
                     print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
 
                     if currdate < mindate:
@@ -349,7 +350,7 @@ def googleEarliestWithTop(quote_text, metadata, u):
     other_titles = [item['title'] for item in res['items'][0:max(1, len(res['items']))]]
     
 
-    earliest = googleEarliest_hybrid(quote_text)
+    earliest = page_info_for_earliest(quote_text)
 
 
     pageinfo = {
@@ -463,177 +464,177 @@ def googleTop(quote, metadata, u):
         return HttpResponse(str(e))
 
 # deprecated
-def googleFirst(text, u):
-    #metatags related to dates:
-    datekeys = {'article:published_time','Pubdate', 'ptime', 'utime', 'displaydate', 'dat', 'date', 'datetime', 'datePublished', 'datepublished', 'dc.date', 'og:pubdate', 'pubdate', 'datecreated', 'pud', 'pdate'}
-
-    low = date(1970, 01, 01) # lower bound for date search
-    today = date.today()
-    high = low + (today - low)/2 # begin with midpoint between lower bound and today
-    day = timedelta(days=1) # one-day increment
-    first = {}
-    mindate = today # earliest date mentioned in metatags of search results
-
-    # binary search
-    for i in range(0, 15): # temporarily limit the number of searches for each quote
-
-        # end loop if range has been maximally narrowed
-        if low >= high: break
-
-        #get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
-        res = json.loads((urllib.urlopen(url)).read())
-        rescount = int(res["searchInformation"]["totalResults"]) #number of results
-
-        # for debugging:
-        print rescount
-        print 'low: ' + str(low) + ' high: ' + str(high)
-
-        # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
-        if rescount < 1:
-            low = high + day
-            high = low + (mindate - low)/2
-
-        elif rescount == 1:
-            first = res["items"][0]
-            break
-
-        # for multiple hits and non-maximally narrowed range, find earliest hit
-        else:
-            for entry in res["items"]:
-                #search for date in two common locations
-                if "pagemap" in entry:
-                    if entry["pagemap"]["metatags"]:
-                        meta = entry["pagemap"]["metatags"]
-                        for key in datekeys:
-                            if key in meta[0]:
-                                try:
-                                    currdate = (parse_datetime(meta[0][key])).date()
-                                    print currdate # for debugging purposes
-
-                                    #update earliest date & earliest hit
-                                    if currdate < mindate:
-                                        mindate = currdate
-                                        first = entry
-
-                                # catch error for unintelligible datestamp
-                                except ValueError: print ('error at ' + key + ' in metatags, parsing ' + meta[0][key])
-
-                    if "newsarticle" in entry["pagemap"]:
-                        article = entry["pagemap"]["newsarticle"]
-                        for key in datekeys:
-                            if key in article[0]:
-                                try:
-                                    currdate = (parse_datetime(article[0][key])).date()
-                                    print currdate
-                                    if currdate < mindate:
-                                        mindate = currdate
-                                        first = entry
-
-                                # catch error for unintelligible datestamp
-                                except ValueError: print ('error at ' + key + ' in newsarticle, parsing ' + article[0][key])
-
-                    print mindate # for debugging purposes
-                else: print 'no pagemap'
-
-            # for next search, reduce upper bound by binary method or earliest date
-            mid = low + (high - low)/2
-            high = mid - day if mid <= mindate else mindate - day
-
-            #for debugging purposes:
-            print mid <= mindate
-
-    print 'earliest entry: '
-
-    # TODO - Also return top hits
-    pageinfo = {
-                'quote':    text, 
-                'title':    first["title"], 
-                'url':      first["link"], 
-                'source':   ' ', 
-                'date':     mindate.strftime('%c'),
-                'cached':   'false'
-                }
-
-    #create source object and put in db
-    newSource = Source(source_quote=text, 
-                        source_url=first["link"], 
-                        source_title=first["title"], 
-                        source_name=' ', 
-                        source_date=mindate)
-    newSource.save()
-
-    #create request and put in db
-    newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
-    newRequest.save()
-
-    pageinfo = json.dumps(pageinfo)
-    return HttpResponse(pageinfo, content_type='application/json')
+# def googleFirst(text, u):
+#     #metatags related to dates:
+#     datekeys = {'article:published_time','Pubdate', 'ptime', 'utime', 'displaydate', 'dat', 'date', 'datetime', 'datePublished', 'datepublished', 'dc.date', 'og:pubdate', 'pubdate', 'datecreated', 'pud', 'pdate'}
+# 
+#     low = date(1970, 01, 01) # lower bound for date search
+#     today = date.today()
+#     high = low + (today - low)/2 # begin with midpoint between lower bound and today
+#     day = timedelta(days=1) # one-day increment
+#     first = {}
+#     mindate = today # earliest date mentioned in metatags of search results
+# 
+#     # binary search
+#     for i in range(0, 15): # temporarily limit the number of searches for each quote
+# 
+#         # end loop if range has been maximally narrowed
+#         if low >= high: break
+# 
+#         #get JSON of results from google with appropriate max date
+#         url = "https://www.googleapis.com/customsearch/v1?q=" + text + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + text + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+#         res = json.loads((urllib.urlopen(url)).read())
+#         rescount = int(res["searchInformation"]["totalResults"]) #number of results
+# 
+#         # for debugging:
+#         print rescount
+#         print 'low: ' + str(low) + ' high: ' + str(high)
+# 
+#         # if upper bound date is too early, make upper bound the earliest date of a hit already encountered
+#         if rescount < 1:
+#             low = high + day
+#             high = low + (mindate - low)/2
+# 
+#         elif rescount == 1:
+#             first = res["items"][0]
+#             break
+# 
+#         # for multiple hits and non-maximally narrowed range, find earliest hit
+#         else:
+#             for entry in res["items"]:
+#                 #search for date in two common locations
+#                 if "pagemap" in entry:
+#                     if entry["pagemap"]["metatags"]:
+#                         meta = entry["pagemap"]["metatags"]
+#                         for key in datekeys:
+#                             if key in meta[0]:
+#                                 try:
+#                                     currdate = (parse_datetime(meta[0][key])).date()
+#                                     print currdate # for debugging purposes
+# 
+#                                     #update earliest date & earliest hit
+#                                     if currdate < mindate:
+#                                         mindate = currdate
+#                                         first = entry
+# 
+#                                 # catch error for unintelligible datestamp
+#                                 except ValueError: print ('error at ' + key + ' in metatags, parsing ' + meta[0][key])
+# 
+#                     if "newsarticle" in entry["pagemap"]:
+#                         article = entry["pagemap"]["newsarticle"]
+#                         for key in datekeys:
+#                             if key in article[0]:
+#                                 try:
+#                                     currdate = (parse_datetime(article[0][key])).date()
+#                                     print currdate
+#                                     if currdate < mindate:
+#                                         mindate = currdate
+#                                         first = entry
+# 
+#                                 # catch error for unintelligible datestamp
+#                                 except ValueError: print ('error at ' + key + ' in newsarticle, parsing ' + article[0][key])
+# 
+#                     print mindate # for debugging purposes
+#                 else: print 'no pagemap'
+# 
+#             # for next search, reduce upper bound by binary method or earliest date
+#             mid = low + (high - low)/2
+#             high = mid - day if mid <= mindate else mindate - day
+# 
+#             #for debugging purposes:
+#             print mid <= mindate
+# 
+#     print 'earliest entry: '
+# 
+#     # TODO - Also return top hits
+#     pageinfo = {
+#                 'quote':    text, 
+#                 'title':    first["title"], 
+#                 'url':      first["link"], 
+#                 'source':   ' ', 
+#                 'date':     mindate.strftime('%c'),
+#                 'cached':   'false'
+#                 }
+# 
+#     #create source object and put in db
+#     newSource = Source(source_quote=text, 
+#                         source_url=first["link"], 
+#                         source_title=first["title"], 
+#                         source_name=' ', 
+#                         source_date=mindate)
+#     newSource.save()
+# 
+#     #create request and put in db
+#     newRequest = Request(user=u, request_date=date.today(), request_source=newSource)
+#     newRequest.save()
+# 
+#     pageinfo = json.dumps(pageinfo)
+#     return HttpResponse(pageinfo, content_type='application/json')
 
 # temp binary search
-def googleEarliest(request, quote):
-    # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
-
-    day = timedelta(days=1) # one-day increment
-    low = date(1970, 01, 01) # lower bound for date search
-    today = date.today()
-    mindate = date.today()
-    high = low + (today - low)/2 # begin with midpoint between lower bound and today
-    
-    first = {}
-
-    # binary search
-    for i in range(0, 8): # temporarily limit the number of searches for each quote
-        
-        # end loop if range has been maximally narrowed
-        if low >= high: break
-
-        # get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
-        res = json.loads((urllib.urlopen(url)).read())
-        rescount = int(res["searchInformation"]["totalResults"]) #number of results
-        
-        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
-
-        if not rescount:
-            print "no results", 
-            low = high + day
-            high = low + (mindate - low)/2
-
-        elif rescount == 1:
-            print "one result",
-            first = res["items"][0]
-            break
-
-        # for multiple hits and non-maximally narrowed range, find earliest hit
-        else:
-            for i, pagemap in enumerate(res["items"]):
-                currdate = findDate(pagemap["pagemap"]).date()
-                print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
-
-                if currdate < mindate:
-                    mindate = currdate
-                    first = pagemap
-
-            # for next search, reduce upper bound by binary method or earliest date
-            mid = low + (high - low)/2
-            high = mid - day if mid <= mindate else mindate - day
-
-    source_name = 'default'
-    if first["pagemap"]["metatags"][0]:
-        meta = first["pagemap"]["metatags"][0]
-        if "og:site_name" in meta.keys(): 
-            source_name = meta["og:site_name"]   
-
-    pageinfo = {
-                'quote':    quote, 
-                'title':    first["title"], 
-                'url':      first["link"], 
-                'name':   source_name, 
-                'date':     mindate.strftime('%c'),
-                'cached':   'n'
-                }
-
-
-    pageinfo = json.dumps(pageinfo)
-    return HttpResponse(pageinfo, content_type='application/json')
+# def googleEarliest(request, quote):
+#     # service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+# 
+#     day = timedelta(days=1) # one-day increment
+#     low = date(1970, 01, 01) # lower bound for date search
+#     today = date.today()
+#     mindate = date.today()
+#     high = low + (today - low)/2 # begin with midpoint between lower bound and today
+#     
+#     first = {}
+# 
+#     # binary search
+#     for i in range(0, 8): # temporarily limit the number of searches for each quote
+#         
+#         # end loop if range has been maximally narrowed
+#         if low >= high: break
+# 
+#         # get JSON of results from google with appropriate max date
+#         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+#         res = json.loads((urllib.urlopen(url)).read())
+#         rescount = int(res["searchInformation"]["totalResults"]) #number of results
+#         
+#         print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
+# 
+#         if not rescount:
+#             print "no results", 
+#             low = high + day
+#             high = low + (mindate - low)/2
+# 
+#         elif rescount == 1:
+#             print "one result",
+#             first = res["items"][0]
+#             break
+# 
+#         # for multiple hits and non-maximally narrowed range, find earliest hit
+#         else:
+#             for i, pagemap in enumerate(res["items"]):
+#                 currdate = findDate(pagemap["pagemap"]).date()
+#                 print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
+# 
+#                 if currdate < mindate:
+#                     mindate = currdate
+#                     first = pagemap
+# 
+#             # for next search, reduce upper bound by binary method or earliest date
+#             mid = low + (high - low)/2
+#             high = mid - day if mid <= mindate else mindate - day
+# 
+#     source_name = 'default'
+#     if first["pagemap"]["metatags"][0]:
+#         meta = first["pagemap"]["metatags"][0]
+#         if "og:site_name" in meta.keys(): 
+#             source_name = meta["og:site_name"]   
+# 
+#     pageinfo = {
+#                 'quote':    quote, 
+#                 'title':    first["title"], 
+#                 'url':      first["link"], 
+#                 'name':   source_name, 
+#                 'date':     mindate.strftime('%c'),
+#                 'cached':   'n'
+#                 }
+# 
+# 
+#     pageinfo = json.dumps(pageinfo)
+#     return HttpResponse(pageinfo, content_type='application/json')
