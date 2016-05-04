@@ -266,7 +266,7 @@ def page_info_for_earliest(quote):
     # binary search
     for i in range(0, 12): # temporarily limit the number of searches for each quote
         
-        if today.year - low.year < 2:
+        if today.year - low.year < 4:
             high = today
 
         # end loop if range has been maximally narrowed
