@@ -340,63 +340,63 @@ def googleEarliestWithTop(quote_text, metadata, u):
     
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
-    try:
+    # try:
+    print "search"
+    res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+    tot = res['queries']['request'][0]['totalResults']
+    
+    if int(tot) == 0:
         print "search"
-        res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
+        print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
+        res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
             print "search"
-            print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
-            res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
-            tot = res['queries']['request'][0]['totalResults']
-            
-            if int(tot) == 0:
-                print "search"
-                print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
-                res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
-                       
+            print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
+            res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
+                   
 
-        # This creates an array of tuples containing (article_title, url) for each source
-        other_urls = [item['link'] for item in res['items'][0:max(1, len(res['items']))]]
-        other_titles = [item['title'] for item in res['items'][0:max(1, len(res['items']))]]
+    # This creates an array of tuples containing (article_title, url) for each source
+    other_urls = [item['link'] for item in res['items'][0:max(1, len(res['items']))]]
+    other_titles = [item['title'] for item in res['items'][0:max(1, len(res['items']))]]
+    
+
+    earliest = page_info_for_earliest(quote_text)
+
+    pageinfo = {
+                'quote':                quote_text, 
+                'url':                  earliest["url"], 
+                'title':                earliest["title"], 
+                'name':                 earliest["name"], 
+                'date':                 earliest["date"].strftime("%c"),
+                'other_article_urls':   other_urls,
+                'other_article_titles': other_titles,
+                'cached':               'false',
+                }
+    
+    newSource = Source(source_quote=            pageinfo['quote'], 
+                        source_url=             pageinfo['url'], 
+                        source_title=           pageinfo["title"], 
+                        source_name=            pageinfo['name'], 
+                        source_date=            earliest['date'],
+                        other_article_urls=     pageinfo['other_article_urls'],
+                        other_article_titles=   pageinfo['other_article_titles'],
+                        )
+    newSource.save()
+    newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
+    newRequest.save()
+
+    pageinfo_text = json.dumps(pageinfo)       
+    return HttpResponse(pageinfo_text, content_type='application/json')
+
+    # except Exception as e:
+    #     # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
+    #     print str(e)
         
-
-        earliest = page_info_for_earliest(quote_text)
-
-        pageinfo = {
-                    'quote':                quote_text, 
-                    'url':                  earliest["url"], 
-                    'title':                earliest["title"], 
-                    'name':                 earliest["name"], 
-                    'date':                 earliest["date"].strftime("%c"),
-                    'other_article_urls':   other_urls,
-                    'other_article_titles': other_titles,
-                    'cached':               'false',
-                    }
-        
-        newSource = Source(source_quote=            pageinfo['quote'], 
-                            source_url=             pageinfo['url'], 
-                            source_title=           pageinfo["title"], 
-                            source_name=            pageinfo['name'], 
-                            source_date=            earliest['date'],
-                            other_article_urls=     pageinfo['other_article_urls'],
-                            other_article_titles=   pageinfo['other_article_titles'],
-                            )
-        newSource.save()
-        newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
-        newRequest.save()
-
-        pageinfo_text = json.dumps(pageinfo)       
-        return HttpResponse(pageinfo_text, content_type='application/json')
-
-    except Exception as e:
-        # http://stackoverflow.com/questions/9823936/python-how-do-i-know-what-type-of-exception-occured
-        print str(e)
-        
-        print "FAIL"
-        print e
-        return HttpResponse(str(e))
+    #     print "FAIL"
+    #     print e
+    #     return HttpResponse(str(e))
 
 # def googleTop(quote, metadata, u):
 #     service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
