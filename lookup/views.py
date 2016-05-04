@@ -13,6 +13,9 @@ import urllib
 import embedly
 import pprint
 
+
+DEVKEY = "AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU"
+
 def userFromRequest(request):
     b64authorization = request.META['HTTP_AUTHORIZATION']
     username = str(b64authorization.decode('base64')).split(':')[0]
@@ -267,7 +270,7 @@ def page_info_for_earliest(quote):
         if low >= high: break
 
         # get JSON of results from google with appropriate max date
-        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc"
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
         
@@ -325,7 +328,7 @@ def page_info_for_earliest(quote):
     return pageinfo
 
 def googleEarliestWithTop(quote_text, metadata, u):
-    service = build("customsearch", "v1", developerKey="AIzaSyABOiui8c_-sFGJSSXCk6tbBThZT2NI4Pc")
+    service = build("customsearch", "v1", developerKey = DEVKEY)
 
     
     NUM_KEYWORDS_TO_USE = 3
