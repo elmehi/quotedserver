@@ -234,10 +234,10 @@ def findDate(pagemap):
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     articleDate = None
 
-    if "metatags" in pagemap:
-        metatag = pagemap["metatags"][0]
-        if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
-        elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
+    # if "metatags" in pagemap:
+    metatag = pagemap["metatags"][0]
+    if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
+    elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
 
     for type in site_types:
         if type in pagemap.keys():
@@ -303,7 +303,7 @@ def page_info_for_earliest(quote):
 
     # DEFAULT SHOULD BE EMPTY STRING
     source_name = ' '
-    if "pagemap" in first and "metatags" in first:
+    if "pagemap" in first: # and "metatags" in first:
         if first["pagemap"]["metatags"][0]:
             meta = first["pagemap"]["metatags"][0]
             if "og:site_name" in meta.keys(): 
