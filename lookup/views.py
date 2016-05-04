@@ -353,13 +353,12 @@ def googleEarliestWithTop(quote_text, metadata, u):
 
     earliest = page_info_for_earliest(quote_text)
 
-
     pageinfo = {
                 'quote':                quote_text, 
                 'url':                  earliest["url"], 
                 'title':                earliest["title"], 
                 'name':                 earliest["name"], 
-                'date':                 earliest["date"],
+                'date':                 earliest["date"].strftime("%c"),
                 'other_article_urls':   other_urls,
                 'other_article_titles': other_titles,
                 'cached':               'false',
@@ -369,7 +368,7 @@ def googleEarliestWithTop(quote_text, metadata, u):
                         source_url=             pageinfo['url'], 
                         source_title=           pageinfo["title"], 
                         source_name=            pageinfo['name'], 
-                        source_date=            pageinfo['date'],
+                        source_date=            earliest['date'],
                         other_article_urls=     pageinfo['other_article_urls'],
                         other_article_titles=   pageinfo['other_article_titles'],
                         )
