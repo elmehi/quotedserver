@@ -261,7 +261,7 @@ def page_info_for_earliest(quote):
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
     # binary search
-    for i in range(0, 12): # temporarily limit the number of searches for each quote
+    for i in range(0, 15): # temporarily limit the number of searches for each quote
         
         # end loop if range has been maximally narrowed
         if low >= high: break
