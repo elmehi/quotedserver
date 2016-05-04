@@ -261,7 +261,7 @@ def page_info_for_earliest(quote):
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
     # binary search
-    for i in range(0, 15): # temporarily limit the number of searches for each quote
+    for i in range(0, 10): # temporarily limit the number of searches for each quote
         
         # end loop if range has been maximally narrowed
         if low >= high: break
@@ -308,9 +308,10 @@ def page_info_for_earliest(quote):
         meta = first["pagemap"]["metatags"][0]
         if "og:site_name" in meta.keys(): 
             source_name = meta["og:site_name"]   
-    # else:
-    #     first["title"] = " "
-    #     first["link"] = " "
+    
+    if not first or len(first.keys()) == 0:
+        first["title"] = " "
+        first["link"] = " "
 
     pageinfo = {
                 'quote':    quote, 
