@@ -179,33 +179,33 @@ def signup(request):
 def results(request, quote):
     quote_text = str(quote.decode('base64'))
 
-    # #check if source in db, if so pull from db
-    # if Source.objects.filter(source_quote = quote_text).exists():
-    #     s = Source.objects.get(source_quote = quote_text)
+    #check if source in db, if so pull from db
+    if Source.objects.filter(source_quote = quote_text).exists():
+        s = Source.objects.get(source_quote = quote_text)
 
-    #     #create request and put in db
-    #     newRequest = Request(user=userFromRequest(request), request_date=datetime.now().replace(tzinfo=None), request_source=s)
-    #     newRequest.save()
+        #create request and put in db
+        newRequest = Request(user=userFromRequest(request), request_date=datetime.now().replace(tzinfo=None), request_source=s)
+        newRequest.save()
 
-    #     pageinfo = {
-    #         'quote':                s.source_quote, 
-    #         'url':                  s.source_url, 
-    #         'title':                s.source_title, 
-    #         'name':                 s.source_name, 
-    #         'date':                 s.source_date.strftime('%c'),
-    #         'other_article_urls':   s.other_article_urls,
-    #         'other_article_titles': s.other_article_titles,
-    #         'cached':               'true'
-    #     }
+        pageinfo = {
+            'quote':                s.source_quote, 
+            'url':                  s.source_url, 
+            'title':                s.source_title, 
+            'name':                 s.source_name, 
+            'date':                 s.source_date.strftime('%c'),
+            'other_article_urls':   s.other_article_urls,
+            'other_article_titles': s.other_article_titles,
+            'cached':               'true'
+        }
         
-    #     return HttpResponse(json.dumps(pageinfo), content_type='application/json')
+        return HttpResponse(json.dumps(pageinfo), content_type='application/json')
 
     # #if not cached initiate API request
-    # else:
-    b64URL = request.META['HTTP_REQUESTORIGINURL']
-    URL = b64URL.decode('base64')
-    
-    metadata = None
+    else:
+        b64URL = request.META['HTTP_REQUESTORIGINURL']
+        URL = b64URL.decode('base64')
+        
+        metadata = None
     if Metadata.objects.filter(url = URL).exists():
         metadata = Metadata.objects.get(url = URL)
         
@@ -228,9 +228,9 @@ def results(request, quote):
     return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
-    print "===========PAGEMAP=============="
-    pprint.pprint(pagemap)
-    print "==============="
+    # print "===========PAGEMAP=============="
+    # pprint.pprint(pagemap)
+    # print "==============="
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     articleDate = None
 
@@ -365,17 +365,17 @@ def googleEarliestWithTop(quote_text, metadata, u):
                 'cached':               'false',
                 }
     
-    # newSource = Source(source_quote=            pageinfo['quote'], 
-    #                     source_url=             pageinfo['url'], 
-    #                     source_title=           pageinfo["title"], 
-    #                     source_name=            pageinfo['name'], 
-    #                     source_date=            earliest['date'],
-    #                     other_article_urls=     pageinfo['other_article_urls'],
-    #                     other_article_titles=   pageinfo['other_article_titles'],
-    #                     )
-    # newSource.save()
-    # newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
-    # newRequest.save()
+    newSource = Source(source_quote=            pageinfo['quote'], 
+                        source_url=             pageinfo['url'], 
+                        source_title=           pageinfo["title"], 
+                        source_name=            pageinfo['name'], 
+                        source_date=            earliest['date'],
+                        other_article_urls=     pageinfo['other_article_urls'],
+                        other_article_titles=   pageinfo['other_article_titles'],
+                        )
+    newSource.save()
+    newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
+    newRequest.save()
 
     pageinfo_text = json.dumps(pageinfo)       
     return HttpResponse(pageinfo_text, content_type='application/json')
