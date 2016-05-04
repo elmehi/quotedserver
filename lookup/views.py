@@ -231,9 +231,9 @@ def results(request, quote):
     return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
-    # print "===========PAGEMAP=============="
-    # pprint.pprint(pagemap)
-    # print "==============="
+    print "===========PAGEMAP=============="
+    pprint.pprint(pagemap)
+    print "==============="
     site_types=["newsarticle", "webpage", "blogposting", "article"]
     articleDate = None
 
