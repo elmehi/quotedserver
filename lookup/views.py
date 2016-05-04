@@ -364,17 +364,17 @@ def googleEarliestWithTop(quote_text, metadata, u):
                 'cached':               'false',
                 }
     
-    newSource = Source(source_quote=            pageinfo['quote'], 
-                        source_url=             pageinfo['url'], 
-                        source_title=           pageinfo["title"], 
-                        source_name=            pageinfo['name'], 
-                        source_date=            earliest['date'],
-                        other_article_urls=     pageinfo['other_article_urls'],
-                        other_article_titles=   pageinfo['other_article_titles'],
-                        )
-    newSource.save()
-    newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
-    newRequest.save()
+    # newSource = Source(source_quote=            pageinfo['quote'], 
+    #                     source_url=             pageinfo['url'], 
+    #                     source_title=           pageinfo["title"], 
+    #                     source_name=            pageinfo['name'], 
+    #                     source_date=            earliest['date'],
+    #                     other_article_urls=     pageinfo['other_article_urls'],
+    #                     other_article_titles=   pageinfo['other_article_titles'],
+    #                     )
+    # newSource.save()
+    # newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
+    # newRequest.save()
 
     pageinfo_text = json.dumps(pageinfo)       
     return HttpResponse(pageinfo_text, content_type='application/json')
