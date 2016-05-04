@@ -5,7 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^(?P<quote>.+)/results/$', views.results, name='results'),
-    url(r'^(?P<quote>.+)/earliest/$', views.googleEarliest, name='earliest'),
+    # url(r'^(?P<quote>.+)/earliest/$', views.googleEarliest, name='earliest'),
 
     url(r'^auth/$', views.authenticate, name='authenticate'),
     url(r'^signup/$', views.signup, name='signup'),
