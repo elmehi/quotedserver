@@ -209,24 +209,24 @@ def results(request, quote):
         URL = b64URL.decode('base64')
         
         metadata = None
-    if Metadata.objects.filter(url = URL).exists():
-        metadata = Metadata.objects.get(url = URL)
-        
-        print 'metadata from cache', metadata
-    else:
-        client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
-        embedly_response = client.extract(URL)
-        
-        keyword_list = [k['name'] for k in embedly_response['keywords']]
-        entity_list = [e['name'] for e in embedly_response['entities']]
-        
-        print keyword_list
-        print entity_list
-        
-        metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
-        metadata.save()
-        
-        print metadata
+        if Metadata.objects.filter(url = URL).exists():
+            metadata = Metadata.objects.get(url = URL)
+            
+            print 'metadata from cache', metadata
+        else:
+            client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
+            embedly_response = client.extract(URL)
+            
+            keyword_list = [k['name'] for k in embedly_response['keywords']]
+            entity_list = [e['name'] for e in embedly_response['entities']]
+            
+            print keyword_list
+            print entity_list
+            
+            metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
+            metadata.save()
+            
+            print metadata
     
     return googleTop(quote_text, metadata, userFromRequest(request))
 
@@ -397,8 +397,8 @@ def googleTop(quote, metadata, u):
 
     # site_types=["newsarticle", "webpage", "blogposting", "article"]
     
-    NUM_KEYWORDS_TO_USE = 0
-    NUM_ENTITIES_TO_USE = 0
+    NUM_KEYWORDS_TO_USE = 2
+    NUM_ENTITIES_TO_USE = 1
     
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
@@ -415,7 +415,8 @@ def googleTop(quote, metadata, u):
             if int(tot) == 0:
                 print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
                 res = service.cse().list(q = quote, cx='006173695502366383915:cqpxathvhhm').execute()
-                
+        
+        pprint.pprint(res)
         
         first = res["items"][0]
         pagemap = first['pagemap']
