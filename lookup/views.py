@@ -255,7 +255,7 @@ def findDate(pagemap):
 def page_info_for_earliest(quote):
     first = {}
     day = timedelta(days=1) # one-day increment
-    low = date(1970, 01, 01) # lower bound for date search
+    low = datetime(1970, 01, 01) # lower bound for date search
     today = datetime.now()
     mindate = datetime.now()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
