@@ -245,9 +245,6 @@ def findDate(pagemap):
     for type in site_types:
         if type in pagemap.keys():
             typeData = pagemap[type][0]
-            # print "===========TYPEDATA=============="
-            # pprint.pprint(typeData)
-            # print "==============="
             if "datecreated" in typeData: articleDate = typeData["datecreated"]
             elif "datepublished" in typeData: articleDate = typeData["datepublished"]
             print "articleDate:", articleDate
@@ -264,10 +261,10 @@ def page_info_for_earliest(quote):
     high = low + (today - low) / 2 # begin with midpoint between lower bound and today
     
     # binary search
-    for i in range(0, 12): # temporarily limit the number of searches for each quote
+    for i in range(0, 13): # temporarily limit the number of searches for each quote
         
-        if today.year - low.year < 4:
-            high = today
+        # if today.year - low.year < 4:
+        #     high = today
 
         # end loop if range has been maximally narrowed
         if low >= high: break
@@ -276,11 +273,6 @@ def page_info_for_earliest(quote):
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
-    
-        # print "===========RES=============="
-        # pprint.pprint(res)
-        # print "==============="
-
 
         print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
 
@@ -316,7 +308,7 @@ def page_info_for_earliest(quote):
         if "og:site_name" in meta.keys(): 
             source_name = meta["og:site_name"]   
     
-    if not first or len(first.keys()) == 0:
+    if not first:
         first["title"] = " "
         first["link"] = " "
 
