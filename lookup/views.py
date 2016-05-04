@@ -285,12 +285,16 @@ def googleEarliest_hybrid(quote):
         # for multiple hits and non-maximally narrowed range, find earliest hit
         else:
             for i, pagemap in enumerate(res["items"]):
-                currdate = findDate(pagemap["pagemap"]).date()
-                print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
+                if "pagemap" in pagemap:
+                    currdate = findDate(pagemap["pagemap"]).date()
+                    print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
 
-                if currdate < mindate:
-                    mindate = currdate
-                    first = pagemap
+                    if currdate < mindate:
+                        mindate = currdate
+                        first = pagemap
+                else:
+                    print "NO PAGEMAP"
+                    print pagemap
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
