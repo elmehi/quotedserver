@@ -317,7 +317,7 @@ def page_info_for_earliest(quote):
                 'title':    first["title"], 
                 'url':      first["link"], 
                 'name':     source_name, 
-                'date':     mindate.strftime('%c'),
+                'date':     mindate,
                 'cached':   'n'
                 }
 
