@@ -261,7 +261,7 @@ def page_info_for_earliest(quote):
     low = datetime(1970, 01, 01).replace(tzinfo=None) # lower bound for date search
     today = datetime.now().replace(tzinfo=None)
     mindate = datetime.now().replace(tzinfo=None)
-    high = today # begin with midpoint between lower bound and today
+    high = low + (low + today) / 2 # begin with midpoint between lower bound and today
     
     # binary search
     for i in range(0, 12): # temporarily limit the number of searches for each quote
