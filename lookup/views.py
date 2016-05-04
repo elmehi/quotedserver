@@ -291,10 +291,11 @@ def page_info_for_earliest(quote):
                 if "pagemap" in pagemap:
                     currdate = findDate(pagemap["pagemap"])
                     print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
-
-                    if currdate < mindate:
-                        mindate = currdate
-                        first = pagemap
+                    
+                    if currdate:
+                        if currdate < mindate:
+                            mindate = currdate
+                            first = pagemap
 
             # for next search, reduce upper bound by binary method or earliest date
             mid = low + (high - low)/2
