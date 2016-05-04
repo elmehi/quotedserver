@@ -242,9 +242,9 @@ def findDate(pagemap):
     for type in site_types:
         if type in pagemap.keys():
             typeData = pagemap[type][0]
-            print "===========TYPEDATA=============="
-            pprint.pprint(typeData)
-            print "==============="
+            # print "===========TYPEDATA=============="
+            # pprint.pprint(typeData)
+            # print "==============="
             if "datecreated" in typeData: articleDate = typeData["datecreated"]
             elif "datepublished" in typeData: articleDate = typeData["datepublished"]
             print "articleDate:", articleDate
@@ -303,14 +303,14 @@ def page_info_for_earliest(quote):
 
     # DEFAULT SHOULD BE EMPTY STRING
     source_name = ' '
-    if "pagemap" in first: # and "metatags" in first:
-        if first["pagemap"]["metatags"][0]:
-            meta = first["pagemap"]["metatags"][0]
-            if "og:site_name" in meta.keys(): 
-                source_name = meta["og:site_name"]   
-    else:
-        first["title"] = " "
-        first["link"] = " "
+    if "pagemap" in first and "metatags" in first:
+        # if first["pagemap"]["metatags"][0]:
+        meta = first["pagemap"]["metatags"][0]
+        if "og:site_name" in meta.keys(): 
+            source_name = meta["og:site_name"]   
+    # else:
+    #     first["title"] = " "
+    #     first["link"] = " "
 
     pageinfo = {
                 'quote':    quote, 
