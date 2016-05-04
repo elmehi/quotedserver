@@ -374,7 +374,7 @@ def googleEarliestWithTop(quote_text, metadata, u):
                         other_article_titles=   pageinfo['other_article_titles'],
                         )
     newSource.save()
-    newRequest = Request(user=u, request_date=date_published_est, request_source=newSource)
+    newRequest = Request(user=u, request_date=earliest["date"], request_source=newSource)
     newRequest.save()
 
     pageinfo_text = json.dumps(pageinfo)       
