@@ -172,7 +172,7 @@ def signup(request):
     if User.objects.filter(username=u).exists():
         return HttpResponse(token, content_type='application/text')
     else:
-        newUser = User(username=u, password=p, date_created=date.today())
+        newUser = User(username=u, password=p, date_created=date.now())
         newUser.save()
         return HttpResponse(token, content_type='application/text')
 
@@ -184,7 +184,7 @@ def results(request, quote):
         s = Source.objects.get(source_quote = quote_text)
 
         #create request and put in db
-        newRequest = Request(user=userFromRequest(request), request_date=date.today(), request_source=s)
+        newRequest = Request(user=userFromRequest(request), request_date=date.now(), request_source=s)
         newRequest.save()
 
         pageinfo = {
@@ -256,8 +256,8 @@ def page_info_for_earliest(quote):
     first = {}
     day = timedelta(days=1) # one-day increment
     low = date(1970, 01, 01) # lower bound for date search
-    today = date.today()
-    mindate = date.today()
+    today = date.now()
+    mindate = date.now()
     high = low + (today - low)/2 # begin with midpoint between lower bound and today
     
     # binary search
@@ -414,7 +414,7 @@ def googleTop(quote, metadata, u):
         
         first = res["items"][0]
         pagemap = first['pagemap']
-        date_published_est = date.today()
+        date_published_est = date.now()
         source_name = ' '
         
         if pagemap["metatags"][0]:
