@@ -271,6 +271,7 @@ def page_info_for_earliest(quote):
 
         # get JSON of results from google with appropriate max date
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
+        print "search"
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
         
@@ -337,15 +338,18 @@ def googleEarliestWithTop(quote_text, metadata, u):
     metadata_query = ' '.join(metadata.keywords[:NUM_KEYWORDS_TO_USE]) + ' ' + ' '.join(metadata.entities[:NUM_ENTITIES_TO_USE])
 
     # try:
+    print "search"
     res = service.cse().list(q = metadata_query, cx='006173695502366383915:cqpxathvhhm', exactTerms=quote_text).execute()
     tot = res['queries']['request'][0]['totalResults']
     
     if int(tot) == 0:
+        print "search"
         print "NO EXACT MATCHES FOUND - RELAXING EXACT TERMS"
         res = service.cse().list(q = quote_text + ' ' + metadata_query, cx='006173695502366383915:cqpxathvhhm').execute()
         tot = res['queries']['request'][0]['totalResults']
         
         if int(tot) == 0:
+            print "search"
             print "NO MATCHES FOUND WITH KEYWORDS - SEARCHING QUOTE ONLY"
             res = service.cse().list(q = quote_text, cx='006173695502366383915:cqpxathvhhm').execute()
                    
