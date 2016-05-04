@@ -266,6 +266,9 @@ def page_info_for_earliest(quote):
     # binary search
     for i in range(0, 12): # temporarily limit the number of searches for each quote
         
+        if today.year() - low.year() < 2:
+            high = today
+
         # end loop if range has been maximally narrowed
         if low >= high: break
 
@@ -274,9 +277,9 @@ def page_info_for_earliest(quote):
         res = json.loads((urllib.urlopen(url)).read())
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
     
-        print "===========RES=============="
-        pprint.pprint(res)
-        print "==============="
+        # print "===========RES=============="
+        # pprint.pprint(res)
+        # print "==============="
 
 
         print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
