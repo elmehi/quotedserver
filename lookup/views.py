@@ -5,10 +5,10 @@ from django.http import HttpResponse
 from googleapiclient.discovery import build
 from .models import Source, Request, User, Metadata
 import json
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime
 from dateutil.parser import parse
-from django.utils.dateparse import parse_datetime
-from django.utils import timezone
+# from django.utils.dateparse import parse_datetime
+# from django.utils import timezone
 import urllib
 import embedly
 import pprint
@@ -179,53 +179,53 @@ def signup(request):
 def results(request, quote):
     quote_text = str(quote.decode('base64'))
 
-    #check if source in db, if so pull from db
-    if Source.objects.filter(source_quote = quote_text).exists():
-        s = Source.objects.get(source_quote = quote_text)
+    # #check if source in db, if so pull from db
+    # if Source.objects.filter(source_quote = quote_text).exists():
+    #     s = Source.objects.get(source_quote = quote_text)
 
-        #create request and put in db
-        newRequest = Request(user=userFromRequest(request), request_date=datetime.now().replace(tzinfo=None), request_source=s)
-        newRequest.save()
+    #     #create request and put in db
+    #     newRequest = Request(user=userFromRequest(request), request_date=datetime.now().replace(tzinfo=None), request_source=s)
+    #     newRequest.save()
 
-        pageinfo = {
-            'quote':                s.source_quote, 
-            'url':                  s.source_url, 
-            'title':                s.source_title, 
-            'name':                 s.source_name, 
-            'date':                 s.source_date.strftime('%c'),
-            'other_article_urls':   s.other_article_urls,
-            'other_article_titles': s.other_article_titles,
-            'cached':               'true'
-        }
+    #     pageinfo = {
+    #         'quote':                s.source_quote, 
+    #         'url':                  s.source_url, 
+    #         'title':                s.source_title, 
+    #         'name':                 s.source_name, 
+    #         'date':                 s.source_date.strftime('%c'),
+    #         'other_article_urls':   s.other_article_urls,
+    #         'other_article_titles': s.other_article_titles,
+    #         'cached':               'true'
+    #     }
         
-        return HttpResponse(json.dumps(pageinfo), content_type='application/json')
+    #     return HttpResponse(json.dumps(pageinfo), content_type='application/json')
 
-    #if not cached initiate API request
+    # #if not cached initiate API request
+    # else:
+    b64URL = request.META['HTTP_REQUESTORIGINURL']
+    URL = b64URL.decode('base64')
+    
+    metadata = None
+    if Metadata.objects.filter(url = URL).exists():
+        metadata = Metadata.objects.get(url = URL)
+        
+        print 'metadata from cache', metadata
     else:
-        b64URL = request.META['HTTP_REQUESTORIGINURL']
-        URL = b64URL.decode('base64')
+        client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
+        embedly_response = client.extract(URL)
         
-        metadata = None
-        if Metadata.objects.filter(url = URL).exists():
-            metadata = Metadata.objects.get(url = URL)
-            
-            print 'metadata from cache', metadata
-        else:
-            client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
-            embedly_response = client.extract(URL)
-            
-            keyword_list = [k['name'] for k in embedly_response['keywords']]
-            entity_list = [e['name'] for e in embedly_response['entities']]
-            
-            print keyword_list
-            print entity_list
-            
-            metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
-            metadata.save()
-            
-            print metadata
+        keyword_list = [k['name'] for k in embedly_response['keywords']]
+        entity_list = [e['name'] for e in embedly_response['entities']]
         
-        return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
+        print keyword_list
+        print entity_list
+        
+        metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
+        metadata.save()
+        
+        print metadata
+    
+    return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
     # print "===========PAGEMAP=============="
