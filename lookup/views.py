@@ -209,26 +209,26 @@ def results(request, quote):
         URL = b64URL.decode('base64')
         
         metadata = None
-    if Metadata.objects.filter(url = URL).exists():
-        metadata = Metadata.objects.get(url = URL)
+        if Metadata.objects.filter(url = URL).exists():
+            metadata = Metadata.objects.get(url = URL)
+            
+            print 'metadata from cache', metadata
+        else:
+            client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
+            embedly_response = client.extract(URL)
+            
+            keyword_list = [k['name'] for k in embedly_response['keywords']]
+            entity_list = [e['name'] for e in embedly_response['entities']]
+            
+            print keyword_list
+            print entity_list
+            
+            metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
+            metadata.save()
+            
+            print metadata
         
-        print 'metadata from cache', metadata
-    else:
-        client = embedly.Embedly('6b216564e304429090c3f15fccde1b3e')
-        embedly_response = client.extract(URL)
-        
-        keyword_list = [k['name'] for k in embedly_response['keywords']]
-        entity_list = [e['name'] for e in embedly_response['entities']]
-        
-        print keyword_list
-        print entity_list
-        
-        metadata = Metadata(url = URL, keywords = keyword_list, entities = entity_list)
-        metadata.save()
-        
-        print metadata
-    
-    return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
+        return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
     # print "===========PAGEMAP=============="
