@@ -316,7 +316,7 @@ def page_info_for_earliest(quote):
         if "og:site_name" in meta.keys(): 
             source_name = meta["og:site_name"]   
     
-    if not first or len(first.keys()) == 0:
+    if not first:
         first["title"] = " "
         first["link"] = " "
 
