@@ -231,97 +231,245 @@ def results(request, quote):
     return googleEarliestWithTop(quote_text, metadata, userFromRequest(request))
 
 def findDate(pagemap):
-    # print "===========PAGEMAP=============="
-    # pprint.pprint(pagemap)
-    # print "==============="
+    metatag_dates = ["citation_publication_date", "pdate", "article:published_time", "og:pubdate"]
     site_types=["newsarticle", "webpage", "blogposting", "article"]
-    articleDate = None
+    type_dates = ["datepublished", "datecreated", "article:published_time"]
 
-    # if "metatags" in pagemap:
-    metatag = pagemap["metatags"][0]
-    if "citation_cover_date" in metatag.keys(): articleDate= metatag["citation_cover_date"] 
-    elif "citation_publication_date" in metatag.keys(): articleDate == metatag["citation_publication_date"]
+    if "metatags" in pagemap:
+        metatag = pagemap["metatags"][0]
+        for key in metatag_dates:
+            if key in metatag.keys():
+                articleDate = metatag[key]
+                return parse(articleDate).replace(tzinfo=None)
 
     for type in site_types:
         if type in pagemap.keys():
             typeData = pagemap[type][0]
-            if "datecreated" in typeData: articleDate = typeData["datecreated"]
-            elif "datepublished" in typeData: articleDate = typeData["datepublished"]
-            print "articleDate:", articleDate
-    if articleDate: return parse(articleDate).replace(tzinfo=None)
-    else: return datetime.now().replace(tzinfo=None)
+            for key in type_dates:
+                if key in typeData.keys():
+                    articleDate = typeData[key]
+                    return parse(articleDate).replace(tzinfo=None)
+
+    return datetime.now().replace(tzinfo=None)
+
+
 
 # temp binary search
-def page_info_for_earliest(quote):
-    first = {}
+def page_info_for_earliest_simple(quote):
     day = timedelta(days=1) # one-day increment
     low = datetime(1970, 01, 01).replace(tzinfo=None) # lower bound for date search
-    today = datetime.now().replace(tzinfo=None)
-    mindate = datetime.now().replace(tzinfo=None)
-    high = low + (today - low) / 2 # begin with midpoint between lower bound and today
-    
-    # binary search
-    for i in range(0, 13): # temporarily limit the number of searches for each quote
-        
-        # if today.year - low.year < 4:
-        #     high = today
+    high = datetime.now().replace(tzinfo=None)
+    factor = 3 # to bias toward recent years, due to internet growth
+    mid = high - (high - low) / factor
+    first = {}
+    count = 0
 
-        # end loop if range has been maximally narrowed
-        if low >= high: break
+    while (mid - low >= day) and (high - mid >= day):
 
-        # get JSON of results from google with appropriate max date
         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=006173695502366383915%3Acqpxathvhhm&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
         res = json.loads((urllib.urlopen(url)).read())
+
         rescount = int(res["searchInformation"]["totalResults"]) #number of results
 
-        print "ittr: ", i, "rescount: ", rescount, 'low: ' + str(low) + ' high: ' + str(high) # for debugging
-
-        if not rescount:
-            low = high + day
-            high = low + (mindate - low)/2
-
-        elif rescount == 1:
+        print (count + ' : ' + rescount)
+        if rescount > 0:
             first = res["items"][0]
-            break
-
-        # for multiple hits and non-maximally narrowed range, find earliest hit
+            high = mid
+            if rescount is 1:
+                break
         else:
-            for i, pagemap in enumerate(res["items"]):
-                if "pagemap" in pagemap:
-                    currdate = findDate(pagemap["pagemap"])
-                    print "pagemap num:", i, "currdate:", currdate, "mindate", mindate
-                    
-                    if currdate:
-                        if currdate < mindate:
-                            mindate = currdate
-                            first = pagemap
+            low = mid + day
 
-            # for next search, reduce upper bound by binary method or earliest date
-            mid = low + (high - low)/2
-            high = mid - day if mid <= mindate else mindate - day
+        # find next date range
+        mid = high - (high - low) / factor
 
-    # DEFAULT SHOULD BE EMPTY STRING
-    source_name = ' '
-    if "pagemap" in first and "metatags" in first:
-        # if first["pagemap"]["metatags"][0]:
-        meta = first["pagemap"]["metatags"][0]
-        if "og:site_name" in meta.keys(): 
-            source_name = meta["og:site_name"]   
-    
-    if not first:
-        first["title"] = " "
+        count += 1
+
+        if not first:
+            first["title"] = " "
         first["link"] = " "
 
     pageinfo = {
-                'quote':    quote, 
-                'title':    first["title"], 
-                'url':      first["link"], 
-                'name':     source_name, 
-                'date':     mindate,
-                'cached':   'n'
-                }
-
+        'quote':    quote,
+        'title':    first["title"],
+        'url':      first["link"],
+        'name':     ' ',
+        'date':     mid,
+        'cached':   'n'
+    }
     return pageinfo
+
+#
+# def check_newspaper(quote):
+#     #query the newspaper archive, Elelphind
+#     elephurl = 'https://www.elephind.com/?a=q&r=1&results=1&sf=byDA&e=-------en-10--1--txt-txINtxCO-' \
+#                + quote + '---------'
+#     #workaround for dynamically loaded content:
+#     driver = webdriver.PhantomJS()
+#     driver.get(elephurl)
+#     tree = html.fromstring(driver.page_source)
+#     today = datetime.now().replace(tzinfo=None)
+#
+#     # check if there are results
+#     results = tree.xpath('//*[@id="searchresultscontainer"]/tbody/tr/td[1]/text()')
+#     if not re.search('no results', str(results)):
+#         #first entry is oldest entry
+#         headline = tree.xpath('//*[@id="searchresultscontainer"]/tbody/tr[2]/td/div[1]/div[1]/a/span/text()')
+#         datecode = (tree.xpath('//*[@id="searchresultscontainer"]/tbody/tr[2]/td/div[1]/div[1]/a/meta'))[0].attrib['content']
+#         url = tree.xpath('//*[@id="searchresultscontainer"]/tbody/tr[2]/td/div[1]/div[1]/meta')[0].attrib['content']
+#         pubdate = parse(datecode).replace(tzinfo=None)
+#         first = {'title': headline, 'link': url, 'date': pubdate}
+#     else:
+#         first = {'title': "No Results", 'link': " ", 'date': today}
+#     return first
+
+#
+# def page_info_for_earliest_with_newspaper(quote):
+#     day = timedelta(days=1) # one-day increment
+#     low = datetime(1970, 01, 01).replace(tzinfo=None) # lower bound for date search
+#     high = datetime.now().replace(tzinfo=None)
+#     firstdate = high
+#     factor = 3 # to bias toward recent years, due to internet growth
+#     first = {'title': "No Results", 'link': " ", 'date': high}
+#     mid = high - (high - low) / factor
+#     count = 0
+#
+#     # searchID = '006173695502366383915%3Acqpxathvhhm'
+#     searchID = '000898682532264933795:0fmbuakszua'
+#
+#     DEVKEY = "AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU"
+#
+#     while (mid - low >= day) and (high - mid >= day):
+#
+#         url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=" + searchID + "&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
+#         res = json.loads((urllib.urlopen(url)).read())
+#         rescount = int(res["searchInformation"]["totalResults"]) #number of results
+#
+#         print (low.strftime('%Y%m%d') + ' to ' + high.strftime('%Y%m%d') + ' at ' + mid.strftime('%Y%m%d'))
+#         print str(count) + ' : ' + str(rescount)
+#
+#
+#         if rescount == 1:
+#             first = res["items"][0]
+#             break
+#         elif not rescount:
+#             low = mid + day
+#         else:
+#             high = mid
+#             # in case the results don't include dates, assume top result is oldest
+#             first = res["items"][0]
+#
+#             for i, json_entry in enumerate(res["items"]):
+#                 if "pagemap" in json_entry:
+#                     currdate = findDate(json_entry["pagemap"])
+#                     if currdate < high:
+#                         high = currdate
+#                         firstdate = currdate
+#
+#         # find next date range
+#         mid = high - (high - low) / factor
+#
+#         count += 1
+#
+#         # for debugging: in case of infinite loop
+#         if count > 15:
+#             break
+#
+#
+#             # DEFAULT SHOULD BE EMPTY STRING
+#     source_name = ' '
+#     if "pagemap" in first and "metatags" in first:
+#         meta = first["pagemap"]["metatags"][0]
+#         if "og:site_name" in meta.keys():
+#             source_name = meta["og:site_name"]
+#
+#     pageinfo = {
+#         'quote':    quote,
+#         'title':    first["title"],
+#         'url':      first["link"],
+#         'name':     source_name,
+#         'date':     firstdate,
+#         'cached':   'n'
+#     }
+#
+#
+#     return pageinfo
+
+
+
+
+
+def page_info_for_earliest(quote):
+    day = timedelta(days=1) # one-day increment
+    low = datetime(1970, 01, 01).replace(tzinfo=None) # lower bound for date search
+    high = datetime.now().replace(tzinfo=None)
+    firstdate = high
+    factor = 3 # to bias toward recent years, due to internet growth
+    first = {'title': "No Results", 'link': " ", 'date': high}
+    mid = high - (high - low) / factor
+    count = 0
+
+    # searchID = '006173695502366383915%3Acqpxathvhhm'
+    searchID = '000898682532264933795:0fmbuakszua'
+
+    DEVKEY = "AIzaSyBj-V7LxIVjkKuUTOyCp-mX7GcjXNcuUSU"
+
+    while (mid - low >= day) and (high - mid >= day):
+
+        url = "https://www.googleapis.com/customsearch/v1?q=" + quote + "&cx=" + searchID + "&exactTerms=" + quote + "&sort=date%3Ar%3A%3A" + high.strftime('%Y%m%d') + "&key=" + DEVKEY
+        res = json.loads((urllib.urlopen(url)).read())
+        rescount = int(res["searchInformation"]["totalResults"]) #number of results
+
+        print (low.strftime('%Y%m%d') + ' to ' + high.strftime('%Y%m%d') + ' at ' + mid.strftime('%Y%m%d'))
+        print str(count) + ' : ' + str(rescount)
+
+
+        if rescount == 1:
+            first = res["items"][0]
+            break
+        elif not rescount:
+            low = mid + day
+        else:
+            high = mid
+            # in case the results don't include dates, assume top result is oldest
+            first = res["items"][0]
+
+            for i, json_entry in enumerate(res["items"]):
+                if "pagemap" in json_entry:
+                    currdate = findDate(json_entry["pagemap"])
+                    if currdate < high:
+                        high = currdate
+                        firstdate = currdate
+
+        # find next date range
+        mid = high - (high - low) / factor
+
+        count += 1
+
+        # for debugging: in case of infinite loop
+        if count > 15:
+            break
+
+
+            # DEFAULT SHOULD BE EMPTY STRING
+    source_name = ' '
+    if "pagemap" in first and "metatags" in first:
+        meta = first["pagemap"]["metatags"][0]
+        if "og:site_name" in meta.keys():
+            source_name = meta["og:site_name"]
+
+    pageinfo = {
+        'quote':    quote,
+        'title':    first["title"],
+        'url':      first["link"],
+        'name':     source_name,
+        'date':     firstdate,
+        'cached':   'n'
+    }
+    return pageinfo
+
+
+
 
 def googleEarliestWithTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey = DEVKEY)
