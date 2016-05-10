@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lookup.apps.LookupConfig',
+    'django_extensions',
     # 'django.contrib.sites',
     # 'django.contrib.flatpages',
     # 'tests.apps.TestsConfig',

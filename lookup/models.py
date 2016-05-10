@@ -13,10 +13,6 @@ class Source(models.Model):
     source_date = models.DateTimeField(default=django.utils.timezone.now)
     other_article_urls = fields.ArrayField(models.TextField(), blank=True, default=list)
     other_article_titles = fields.ArrayField(models.TextField(), blank=True, default=list)
-    other_trusted = fields.ArrayField(models.TextField(), blank=True, default=list)
-    other_untrusted = fields.ArrayField(models.TextField(), blank=True, default=list)
-    trusted = models.BooleanField(default=False)
-    untrusted = models.BooleanField(default=False)
     
     def __str__(self):
         return self.source_quote
@@ -25,7 +21,6 @@ class User(models.Model):
     highlighting_state = models.IntegerField(default=2)
     username = models.TextField()
     password = models.TextField()
-    highlight_url = models.BooleanField(default = True)
     date_created = models.DateTimeField(default=django.utils.timezone.now)
     domains = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
     trusted_sources = fields.ArrayField(models.CharField(max_length=200), blank=True, default=list)
