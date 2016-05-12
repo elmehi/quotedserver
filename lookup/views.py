@@ -400,6 +400,7 @@ def page_info_for_earliest_simple(quote):
 
 
 def page_info_for_earliest(quote):
+    print "pageinfo_earliest"
     day = timedelta(days=1) # one-day increment
     low = datetime(1970, 01, 01).replace(tzinfo=None) # lower bound for date search
     high = datetime.now().replace(tzinfo=None)
@@ -467,8 +468,6 @@ def page_info_for_earliest(quote):
         'cached':   'n'
     }
     return pageinfo
-
-
 
 
 def googleEarliestWithTop(quote_text, metadata, u):
