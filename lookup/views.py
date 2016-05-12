@@ -473,7 +473,7 @@ def page_info_for_earliest(quote):
 
 def googleEarliestWithTop(quote_text, metadata, u):
     service = build("customsearch", "v1", developerKey = DEVKEY)
-
+    print "google_earliest"
     
     NUM_KEYWORDS_TO_USE = 3
     NUM_ENTITIES_TO_USE = 2
